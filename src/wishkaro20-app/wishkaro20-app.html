@@ -4,9 +4,11 @@
 <link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tab.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
-<link rel="import" href="sharedstyles.html">
 <!-- Non polymer includes -->
-<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<link rel="import" href="sharedstyles.html">
+<link rel="import" href="my-firestoreinit.html">
+<!-- Non polymer includes -->
+
 <dom-module id="wishkaro20-app">
   <template>
     <style include = "sharedstyles">
@@ -21,7 +23,7 @@
           <paper-tab> CATEGORIES </paper-tab>
       </paper-tabs> 
     </app-header>
-
+     <myfirestore-init config="{{_config}}" status = "{{firebaseinitstatus}}"></myfirestore-init>
   </template>
 
   <script>
@@ -36,10 +38,75 @@
           prop1: {
             type: String,
             value: 'wishkaro20-app'
+          },
+ /** Add var for every observer to track first init **/  
+          _observerinit:
+          {
+              type:Object,
+              value:"`null"
+          },
+         /* Pass the Firebase Configuration Parameters */ 
+          _config: 
+          {
+            type:Object,
+          },
+          /* Check the status of firebase init */
+          firebaseinitstatus:
+          {
+            type: String,
+            value:"None",
+            observer : "firaebaseInitStatus"
           }
-        };
+        }
+      } /** Properties */
+      /**
+     * @construct
+     * polymer
+     * When component lifecycle gets called, set the init 
+     */
+      constructor ()
+      {
+        super();
+        this._observerinit = 
+           {
+            firaebaseInitStatus : "none"
+          
+          }
       }
-    }
+      /**
+     * @Ready
+     * polymer
+     * When component lifecycle gets called, set the init 
+     */
+      ready( )
+          {
+            super.ready();
+            this._config = 
+             {
+                          apiKey: "AIzaSyCZA25rLvj5sFwmn_gcE7pHZU1ABPZB3zc",
+                          authDomain: "wishkaro-94738.firebaseapp.com",
+                          databaseURL: "https://wishkaro-94738.firebaseio.com",
+                          projectId: "wishkaro-94738",
+                          storageBucket: "wishkaro-94738.appspot.com",
+                          messagingSenderId: "710301933949"
+                         };
+          }
+      /**
+     * @firaebaseInitStatus
+     * polymer
+     * Observer to check the init status  
+     */
+      firaebaseInitStatus ( )
+      {
+         if(this._observerinit.firaebaseInitStatus === "ready")
+         {
+             console.log("Firebase Init" + this.firebaseinitstatus);
+         }else
+         this._observerinit.firaebaseInitStatus = "ready";
+      }
+
+
+     }
 
     window.customElements.define(Wishkaro20App.is, Wishkaro20App);
   </script>
