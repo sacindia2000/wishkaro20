@@ -1,0 +1,46 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="sharedstyles.html">
+<!-- Non polymer includes -->
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<dom-module id="wishkaro20-app">
+  <template>
+    <style include = "sharedstyles">
+
+    </style>
+    <app-header reveals slot="header">
+      <app-toolbar style="height: 48px;">
+          <div main-title style = "margin-left: 16px;margin-top:16px; margin-bottom:14px;" >WISH KARO</div>
+      </app-toolbar>
+      <paper-tabs  id = "mytabs" selected="0" >
+          <paper-tab> POPULAR </paper-tab>
+          <paper-tab> CATEGORIES </paper-tab>
+      </paper-tabs> 
+    </app-header>
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class Wishkaro20App extends Polymer.Element {
+      static get is() { return 'wishkaro20-app'; }
+      static get properties() {
+        return {
+          prop1: {
+            type: String,
+            value: 'wishkaro20-app'
+          }
+        };
+      }
+    }
+
+    window.customElements.define(Wishkaro20App.is, Wishkaro20App);
+  </script>
+</dom-module>

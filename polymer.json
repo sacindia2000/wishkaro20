@@ -1,0 +1,17 @@
+{
+  "shell": "src/wishkaro20-app.html",
+  "lint": {
+    "rules": [
+      "polymer-2"
+    ]
+  },
+  "builds": [{
+      "name": "es5-bundled",
+      "bundle": 
+      {
+      "js": {"minify": true},
+      "css": {"minify": true},
+      "html": {"minify": true}
+  }
+  }]
+}
