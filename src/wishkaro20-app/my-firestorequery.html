@@ -1,0 +1,152 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<!-- Firebase Includes -->
+<!-- Firebase Includes -->
+<script src="wishkaro20global.js"></script>
+<!-- Non polymer includes -->
+<dom-module id="my-firestorequery">
+<!-- Non polymer includes -->
+  <template>
+  </template>
+  <script>
+      var count =0;
+    /**
+     * @customElement
+     * @polymer
+     */
+    class MyFirestoreQuery extends Polymer.Element {
+      static get is() { return 'my-firestorequery'; }
+      static get properties() {
+        return {
+          prop1: {
+            type: String,
+            value: 'firestore-query'
+          },
+          /** Config parameters like handle,size,limit etc **/
+          firestorereadconfig:
+          {
+              type: Object,
+              value:"null"
+          },
+         /** Toggle to seek data each time **/ 
+          firestorefetchdata:
+          {
+             type:Boolean,
+             value:false,
+             observer:"firestoreGetData"
+          },
+          /** Data object to be passed **/
+          firestoredataobject:
+          {
+              type:Object,
+              value:"null",
+              notify:true
+          },
+         /** Return error if any **/ 
+          firestoreerror:
+          {
+              type:String,
+              value:"null",
+              notify: true
+          }
+         };
+      }
+    /*
+     * 
+     * polymer Life Cycle Function
+     */
+      constructor()
+      {
+          super();
+          this._observerinit = 
+          {
+            firestoreGetData: "none"
+          };
+
+          this.firestorereadconfig =
+          {
+              collectionhandle: "null",
+              orderby:"null",
+              index : 0,
+              limit: 0
+          }
+      }
+     
+     /*
+     * 
+     * polymer Life Cycle Function
+     */
+      ready()
+      {
+          super.ready();
+          /*
+          setInterval(function(){ console.log("Time OUt");
+          var x = new Object();
+            x.sequence = count++          
+          this.getdata = x;
+ }.bind(this), 3000); */ 
+      }
+
+     /*
+     * 
+     * Observer getting called on toggle
+     */
+
+      firestoreGetData()
+      {
+          if(this._observerinit.firestoreGetData === "ready")
+          {
+           if(this.firestorereadconfig.dbhandle != "null")
+           {  
+               console.log("Reading Data");
+               this.getFirestoreDataFromCollecton();
+           }
+          
+          }else
+          this._observerinit.firestoreGetData = "ready";
+
+      }
+     /*
+     * 
+     * Async read from collection
+     */
+       getFirestoreDataFromCollecton()
+       {
+                 /** Seek data as per Index and Size **/
+         this.firestorereadconfig.dbhandle
+              .orderBy(this.firestorereadconfig.orderby,"desc")
+              .startAt(this.firestorereadconfig.index)
+              .limit(this.firestorereadconfig.limit).get()
+              .then(function(querySnapshot) {
+                   querySnapshot.forEach(function(doc) {
+               // doc.data() is never undefined for query doc snapshots
+                   console.log(doc.id, " => ", doc.data());
+                   this.firestoredataobject = doc;
+                  }.bind(this));
+              }.bind(this))
+              .catch(function(error) {
+               console.log("Error getting documents: ", error);
+              });
+         /**********************************************/
+       
+       }
+
+       
+      
+      
+     }   /** End of Component **/
+    
+    
+
+    window.customElements.define(MyFirestoreQuery.is, MyFirestoreQuery);
+  </script>
+</dom-module>

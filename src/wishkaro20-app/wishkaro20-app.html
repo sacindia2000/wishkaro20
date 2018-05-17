@@ -6,13 +6,14 @@
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
 <!-- Non polymer includes -->
 <link rel="import" href="sharedstyles.html">
-<link rel="import" href="my-firestoreinit.html">
+<link rel="import" href="my-firebaseinit.html">
+<link rel="import" href="my-view1.html">
+
 <!-- Non polymer includes -->
 
 <dom-module id="wishkaro20-app">
   <template>
     <style include = "sharedstyles">
-
     </style>
     <app-header reveals slot="header">
       <app-toolbar style="height: 48px;">
@@ -23,8 +24,9 @@
           <paper-tab> CATEGORIES </paper-tab>
       </paper-tabs> 
     </app-header>
-     <myfirestore-init config="{{_config}}" status = "{{firebaseinitstatus}}"></myfirestore-init>
-  </template>
+    <myfirebase-init config="{{_config}}" status = "{{firebaseinitstatus}}"></myfirebase-init>
+    <my-view1 dbready = "{{firebasedbready}}"></my-view1>
+    </template>
 
   <script>
     /**
@@ -56,6 +58,13 @@
             type: String,
             value:"None",
             observer : "firaebaseInitStatus"
+          },
+          /* Indicate whether data base is ready */
+          firebasedbready:
+          {
+            type:Boolean,
+            value:false,
+            notify:true
           }
         }
       } /** Properties */
@@ -101,6 +110,7 @@
          if(this._observerinit.firaebaseInitStatus === "ready")
          {
              console.log("Firebase Init" + this.firebaseinitstatus);
+             this.firebasedbready = true;
          }else
          this._observerinit.firaebaseInitStatus = "ready";
       }

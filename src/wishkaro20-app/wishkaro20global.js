@@ -5,4 +5,5 @@
  var myglobal=
  {
      firebasehandle : 0,
+     firestorehandle:0
  }

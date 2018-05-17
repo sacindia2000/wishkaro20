@@ -1,0 +1,232 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!-- Polymer Components -->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+<!-- App components -->
+<link rel="import" href="sharedstyles.html">
+<link rel="import" href="my-firestoreinit.html">
+<link rel="import" href="my-firestorequery.html">
+
+
+<dom-module id="my-view1">
+  <template>
+   <style>
+   .container
+   {
+     width:100vw;
+     height:100vh
+   }
+   </style> 
+   <div class = "container" on-click="handleClick">
+    <my-firestoreinit firestoreconfig = "{{dbconfig}}" 
+                      firestorelistsize = "{{listsize}}"
+                      firestorecollectionhndl = "{{dbhandle}}"                              >
+    </my-firestoreinit>
+    <my-firestorequery firestorereadconfig = "{{dbreadconfig}}"
+                       firestorefetchdata = "{{reqdata}}"
+                       firestoredataobject = "{{dataobject}}"           
+    ></my-firestorequery>  
+
+   </div>
+  </template>
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class MyView1 extends Polymer.Element {
+      static get is() { return 'my-view1'; }
+      static get properties() {
+        return {
+          prop1: {
+            type: String,
+            value: 'my-view1'
+          },
+          /** set Data base configuration **/
+          dbreadconfig:
+          {
+            type:Object,
+            value:"null",
+            notify:true
+          },
+          /** Request for data by toggling **/    
+          reqdata:
+          {
+            type:Boolean,
+            value:false,
+            notify:true
+          },
+          /** Received data object **/
+          dataobject:
+          {
+            type:Object,
+            value:"null",
+            observer:"processData"
+          },
+         /** Check for DB to be ready before accessing **/ 
+          dbready:
+          {
+            type:Boolean,
+            value:false,
+            observer:"databaseReady"
+          },
+           /** set Data base configuration **/
+           dbconfig:
+          {
+            type:Object,
+            value:"null",
+            notify:true
+          },
+      /** Observer gets invoked each time list gets updated **/
+          listsize:
+          {
+            type:Number,
+            value:0,
+            observer: "DatabaseSize"
+          },
+          /** handle to collection **/
+          dbhandle:
+          {
+            type:Object,
+            value: "null"
+          },
+          _viewstate:
+          {
+            type:Object,
+            value: "null"
+          }  
+               }
+      }
+
+      constructor()
+      {
+        super();
+        /** Polymer invokes observers once even before actual data is updated
+            Add each observer here to make sure proper status is set 
+        **/  
+          this._observerinit = 
+          {
+            dbready: "none",
+            dataobject : "none",
+            listsize : "none"
+
+          };
+
+        this._viewstate =
+        {
+          newlistsize:0,
+          listsize: 0,
+          currentpage:0,
+          itemsperpage:4,
+          numberofitems:0
+        }
+      }
+      ready()
+      {
+        super.ready();
+      }
+
+      databaseReady()
+      {
+        if(this._observerinit.dbready === "ready")
+        {
+          console.log("Data base is ready");
+        //  this.requestData();/** Initial call to set collection and other config details **/
+              this.dbconfig = 
+                  {
+                     collection: "popular",
+                     orderby:"sequence"
+                  };
+
+      }else
+      this._observerinit.dbready = "ready";
+      }
+
+      requestData()
+      {
+        this.reqdata = !this.reqdata;
+      }
+
+      processData()
+      {
+        if(this._observerinit.dataobject === "ready")
+
+        {
+          console.log("Process the received data" + this.dataobject.get("sequence"));
+          this._viewstate.numberofitems++;
+        }else
+        this._observerinit.dataobject = "ready";
+
+      }
+      gotdatachanged()
+     {
+       console.log("gotdata changed View1" + this.gotdata.sequence);
+     }
+
+     handleClick()
+     {
+       console.log("I am clicked");
+       this.getNextPage();
+     }
+
+     DatabaseSize()
+     {
+      if(this._observerinit.listsize === "ready")
+        {
+           console.log("List Size " + this.listsize);
+            if(this._viewstate.listsize === 0)
+            {
+                console.log("List size receive for the first tiem");
+                console.log("DB Handle is " + this.dbhandle);
+                this.dbreadconfig = 
+                  {
+                    limit: 4,
+                   index: 0,
+                   orderby:"sequence"
+                 };
+                 this.dbreadconfig.dbhandle = this.dbhandle;
+                 this.dbreadconfig.index = this.listsize;
+                this._viewstate.listsize = this.listsize;
+            }else
+            this._viewstate.newlistsize = this._viewstate.listsize;
+
+          // this.dbconfig.index = this.listsize;
+          // this.dbconfig.size = 4;
+          // this.requestData();
+        //  this.getNextPage();
+           
+        }else
+        this._observerinit.listsize = "ready";
+
+     }
+
+     getNextPage()
+     {
+        /** Set Configuration Parameters **/
+        this.dbreadconfig.index = (this._viewstate.listsize - this._viewstate.numberofitems);
+        if(this._viewstate.listsize != this._viewstate.numberofitems )
+        {
+          this.requestData();
+        }
+        else
+        console.log("List Complete");
+        
+
+
+     }
+     
+     }   /** End of Component **/
+    
+    
+
+    window.customElements.define(MyView1.is, MyView1);
+  </script>
+</dom-module>

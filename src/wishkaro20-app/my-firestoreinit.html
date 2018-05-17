@@ -10,11 +10,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <!-- Firebase Includes -->
-<script src="https://www.gstatic.com/firebasejs/5.0.1/firebase.js"></script>
 <!-- Firebase Includes -->
 <script src="wishkaro20global.js"></script>
 <!-- Non polymer includes -->
-<dom-module id="myfirestore-init">
+<dom-module id="my-firestoreinit">
 <!-- Non polymer includes -->
   <template>
   </template>
@@ -24,117 +23,117 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * @polymer
      */
     class MyFirestoreInit extends Polymer.Element {
-      static get is() { return 'myfirestore-init'; }
+      static get is() { return 'my-firestoreinit'; }
       static get properties() {
         return {
           prop1: {
             type: String,
-            value: 'wishkaro20-app'
+            value: 'firestore-init'
           },
-        /** Add var for every observer to track first init **/  
-         _observerinit:
+        /** Collection configuration **/  
+          firestoreconfig:
           {
               type:Object,
-              value:"`null"
+              value:"null",
+              observer:"configFirestore"
           },
-         /** Config values to init Firebase element **/ 
-          config:
+          firestorecollectionhndl:
           {
-              type: Object,
-              value: 'null',
-              observer: "_setFirebaseConfig"
+            type:Object,
+            value:"null",
+            notify:true
           },
-        /** Update the status back to target element **/  
-          status:
+         /** Total size of the items in the collection **/ 
+          firestorelistsize:
+          {
+              type:Number,
+              value:0,
+              notify:true
+          },
+        /** Any errors thrown by the firestore db **/  
+          firestoreerror:
           {
               type:String,
-              value: "none",
+              value:"null",
               notify: true
-
-          },
-
-        };
+          }
+         };
       }
-
-     /**
-     * @construct
-     * polymer
-     * When component lifecycle gets called, set the init 
+     /*
+     * 
+     * polymer Life Cycle Function
      */
-      constructor() 
+      constructor()
       {
           super();
-        /** Polymer invokes observers once even before actual data is updated
-            Add each observer here to make sure proper status is set 
-        **/  
+       /** Observers to be registered to avoid repeat call backs **/   
           this._observerinit = 
           {
-            _setFirebaseConfig : "none"
+            configFirestore: "none"
           };
+
       }
 
-    /**
-     * @ready
-     * polymer
-     * When component lifecycle gets called, set the init 
+     /*
+     * 
+     * polymer Life Cycle Function
      */
-     ready(  )
-     {
-         super.ready(); /** As per Polymer 2.0 */
- 
-    }
-    /**
-     * Observer Set the config parameters post it gets updated from target 
-     * element
-     *  
+      ready()
+      {
+          super.ready();
+      }
+
+     /*
+     * 
+     * Observer to be invoked once Config parameters are updated 
      */
-    _setFirebaseConfig()
-    {
-       if(this._observerinit._setFirebaseConfig === "ready")
+     configFirestore( )
+      {
+        if(this._observerinit.configFirestore === "ready")  
+        {
+           if( (this.firestorecollectionhndl === "null") || (typeof this.firestorecollectionhndl === "undefined")  )
+           {  
+            this.initfirestore(this.firestoreconfig.collection); /* Set parameters */
+            this.getFirestoreListSize(); /* Get list size from the server async call */
+           }
+        }else
+        this._observerinit.configFirestore = "ready";
+              
+      }
+
+     /*
+     * 
+     * Init Firestore if firebase handle is avaibale  
+     */
+      initfirestore(collection)
+      {
+        /** Create global data base instance **/
+        if(myglobal.firestorehandle === 0)
+          {  
+            myglobal.firestorehandle = firebase.firestore();
+          }        
+        if( (this.firestorecollectionhndl === "null") || (typeof this._firestorefirestorecollectionhndlcollection === "undefined")  )
+             this.firestorecollectionhndl = myglobal.firestorehandle.collection(collection);
+      }
+      
+    /*
+     * 
+     * Async call back registered to get list size. This also indicates init complete
+     */
+      getFirestoreListSize( )
        {
-          console.log("_setFirebaseConfig" + this.config);
-          if((this.status != "InitSuccess") && (this.config != 'null') 
-          &&  (typeof this.status != 'undefined'))
-          {
-            myglobal.firebasehandle = firebase.initializeApp(this.config);
-            this._initPersistance( );
-            this.status = "InitSuccess";
-          }else
-          this.status = "InitFail";
+             this.firestorecollectionhndl.orderBy(this.firestoreconfig.orderby,"desc").limit(1)
+             .onSnapshot(function(querySnapshot) {
+                 querySnapshot.forEach(function(doc) {
+                   console.log(" data: "+ doc.get("sequence"));
+                   this.firestorelistsize = doc.get("sequence");
+                 }.bind(this));
+             }.bind(this));
+    
+      }
+      
 
-        }else /** Ignore the firt call **/
-        this._observerinit._setFirebaseConfig = "ready";   
-    }
-
-     /**
-     * Enable persistance , no need to cancel when not avaiable
-     * element
-     *  
-     */
-    _initPersistance( )
-    {
-        firebase.firestore().enablePersistence()
-      .then(function() {
-          // Initialize Cloud Firestore through firebase
-          console.log("Persistance enabled");
-          
-      })
-      .catch(function(err) {
-          if (err.code == 'failed-precondition') {
-              // Multiple tabs open, persistence can only be enabled
-              // in one tab at a a time.
-              // ...
-              console.log("Persistance failed-precondition");
-          } else if (err.code == 'unimplemented') {
-              // The current browser does not support all of the
-              // features required to enable persistence
-              // ...
-              console.log("persistance unimplemented");
-          }
-      });
-
-    }
-     
+      
      }   /** End of Component **/
     
     

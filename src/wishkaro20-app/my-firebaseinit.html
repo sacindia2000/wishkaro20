@@ -1,0 +1,147 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<!-- Firebase Includes -->
+<!-- Firebase App is always required and must be first -->
+<script src="https://www.gstatic.com/firebasejs/5.0.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/5.0.1/firebase-firestore.js"></script>
+
+<!-- Firebase Includes -->
+<script src="wishkaro20global.js"></script>
+<!-- Non polymer includes -->
+<dom-module id="myfirebase-init">
+<!-- Non polymer includes -->
+  <template>
+  </template>
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class MyFirebaseInit extends Polymer.Element {
+      static get is() { return 'myfirebase-init'; }
+      static get properties() {
+        return {
+          prop1: {
+            type: String,
+            value: 'firebase-init'
+          },
+        /** Add var for every observer to track first init **/  
+         _observerinit:
+          {
+              type:Object,
+              value:"`null"
+          },
+         /** Config values to init Firebase element **/ 
+          config:
+          {
+              type: Object,
+              value: 'null',
+              observer: "_setFirebaseConfig"
+          },
+        /** Update the status back to target element **/  
+          status:
+          {
+              type:String,
+              value: "none",
+              notify: true
+
+          },
+
+        };
+      }
+
+     /**
+     * @construct
+     * polymer
+     * When component lifecycle gets called, set the init 
+     */
+      constructor() 
+      {
+          super();
+        /** Polymer invokes observers once even before actual data is updated
+            Add each observer here to make sure proper status is set 
+        **/  
+          this._observerinit = 
+          {
+            _setFirebaseConfig : "none"
+          };
+      }
+
+    /**
+     * @ready
+     * polymer
+     * When component lifecycle gets called, set the init 
+     */
+     ready(  )
+     {
+         super.ready(); /** As per Polymer 2.0 */
+ 
+    }
+    /**
+     * Observer Set the config parameters post it gets updated from target 
+     * element
+     *  
+     */
+    _setFirebaseConfig()
+    {
+       if(this._observerinit._setFirebaseConfig === "ready")
+       {
+          console.log("_setFirebaseConfig" + this.config);
+          if((this.status != "InitSuccess") && (this.config != 'null') 
+          &&  (typeof this.status != 'undefined'))
+          {
+            myglobal.firebasehandle = firebase.initializeApp(this.config);
+            this._initPersistance( );
+            this.status = "InitSuccess";
+          }else
+          this.status = "InitFail";
+
+        }else /** Ignore the firt call **/
+        this._observerinit._setFirebaseConfig = "ready";   
+    }
+
+     /**
+     * Enable persistance , no need to cancel when not avaiable
+     * element
+     *  
+     */
+    _initPersistance( )
+    {
+        firebase.firestore().enablePersistence()
+      .then(function() {
+          // Initialize Cloud Firestore through firebase
+          console.log("Persistance enabled");
+          
+      })
+      .catch(function(err) {
+          if (err.code == 'failed-precondition') {
+              // Multiple tabs open, persistence can only be enabled
+              // in one tab at a a time.
+              // ...
+              console.log("Persistance failed-precondition");
+          } else if (err.code == 'unimplemented') {
+              // The current browser does not support all of the
+              // features required to enable persistence
+              // ...
+              console.log("persistance unimplemented");
+          }
+      });
+
+    }
+     
+     }   /** End of Component **/
+    
+    
+
+    window.customElements.define(MyFirebaseInit.is, MyFirebaseInit);
+  </script>
+</dom-module>
