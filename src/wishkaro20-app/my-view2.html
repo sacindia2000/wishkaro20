@@ -12,11 +12,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../../bower_components/paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
-<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
-<link rel="import" href="../../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 
 <!-- App components -->
 <link rel="import" href="sharedstyles.html">
@@ -24,15 +19,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="my-firestorequery.html">
 
 
-<dom-module id="my-view1">
+<dom-module id="my-view2">
   <template>
       <style include= "sharedstyles" >
          :host{
-        top:92px;
-
+          top:92px;
       }
-      
-      </style> 
+        </style> 
     <my-firestoreinit firestoreconfig = "{{dbconfig}}" 
                       firestorelistsize = "{{listsize}}"
                       firestorecollectionhndl = "{{dbhandle}}"                              >
@@ -41,37 +34,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                        firestorefetchdata = "{{reqdata}}"
                        firestoredataobject = "{{dataobject}}"           
     ></my-firestorequery> 
+
     <div class = "container" on-click="handleClick">
-       <iron-list style = "width:100%"items="[[imagearray]]" as="item" id = "itemlist" scroll-target= "document"  
+       <iron-list items="[[imagearray]]" as="item" id = "itemlist" scroll-target= "document"  
                   selection-enabled selected-item = "{{selectedItem}}" grid>
         <template>
             <div class = "flexchild"style="width:calc(50% - .5px);"> 
                 <iron-image  class = "imagecontainer" sizing = "cover" style = "width:calc(100% - 4px); height:180px; background-color: lightgray;"
-                preload fade src=[[item.webp]] error="{{imageload}}"></iron-image>
+                preload fade src=[[item.webp]]></iron-image>
          </div>
         </template>
       </iron-list>
-      <div class = "spinnerpos">
-        <paper-spinner active> </paper-spinner>
-      </div>
-      <paper-toast class="fit-bottom" text="Hello world!" opened>
-      <paper-button onclick="toast1.toggle()" class="yellow-button">Close now!</paper-button>
-      </paper-toast>
-     </div> 
-      
+
+    </div>
+   
   </template>
   <script>
     /**
      * @customElement
      * @polymer
      */
-    class MyView1 extends Polymer.GestureEventListeners (Polymer.Element) {
-      static get is() { return 'my-view1'; }
+    class MyView2 extends Polymer.Element {
+      static get is() { return 'my-view2'; }
       static get properties() {
         return {
           prop1: {
             type: String,
-            value: 'my-view1'
+            value: 'my-view2'
           },
           /** set Data base configuration **/
           dbreadconfig:
@@ -125,11 +114,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           imagearray: {
             type: Array
           },
-          imageload:{
-          type : Boolean,
-          value:false,
-          observer: "ImageLoadCount"
-          },
           _viewstate:
           {
             type:Object,
@@ -138,12 +122,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                }
       }
       
-      ImageLoadCount()
-      {
-        console.log("Image Loaded");
-        this.imageload = false;        
-        
-      }
 
       constructor()
       {
@@ -161,26 +139,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         this._viewstate =
         {
-          newlistsize:0,   /** Update when you already know existing list size **/
-          listsize: 0,     /** List size currently known **/
-          currentpage:0,   /** Current page in view port **/
-          itemsperpage:8,  /** Items to be displayed per page **/
-          numberofitems:0,  /** Total number of items in view **/
-          receiveditemsperreq : 0,
-          states : greadstate.INIT /** For reading purpose **/
+          newlistsize:0,
+          listsize: 0,
+          currentpage:0,
+          itemsperpage:4,
+          numberofitems:0
         };
         this.imagearray = [];
-        
 
       }
       ready()
       {
         super.ready();
-      // Polymer.setPassiveTouchGestures(true); 
-        console.log("My view 1 is ready");
-        Polymer.Gestures.addListener(this, 'track', e => this.handleTrackEvent(e));
-        Polymer.Gestures.setTouchAction(this,"auto");
-
       }
       loadMoreData()
       {
@@ -194,9 +164,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         //  this.requestData();/** Initial call to set collection and other config details **/
               this.dbconfig = 
                   {
-                     collection: "popular",
+                     collection: "category",
                      orderby:"sequence"
                   };
+
       }else
       this._observerinit.dbready = "ready";
       }
@@ -214,23 +185,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           /** Create a new object removing out rest of the firestore headers **/
           var imageobject = new Object();
           imageobject.webp = this.dataobject.get("webp");
-          imageobject.jpg = this.dataobject.get("jpg");
+        //  imageobject.jpg = this.dataobject.get("jpg");
           this.push('imagearray',imageobject);
-          this._viewstate.receiveditemsperreq++;
           this._viewstate.numberofitems++;
-          if( this._viewstate.receiveditemsperreq === this._viewstate.itemsperpage )
-          {
-            console.log("Read Complete");
-            this._viewstate.states = greadstate.DBINIT;
-            this._viewstate.receiveditemsperreq = 0;
-
-          }else if (this._viewstate.numberofitems === this._viewstate.listsize)
-          {
-             console.log("Full list complete");
-             this._viewstate.states = greadstate.DBINIT;
-             this._viewstate.receiveditemsperreq = 0;
-          }
-          
         }else
         this._observerinit.dataobject = "ready";
       }
@@ -242,7 +199,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      handleClick()
      {
        console.log("I am clicked");
-     //  this.getNextPage();
+       this.getNextPage();
      }
 
      DatabaseSize()
@@ -250,89 +207,53 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if(this._observerinit.listsize === "ready")
         {
            console.log("List Size " + this.listsize);
-            if(this._viewstate.states === greadstate.INIT )
+            if(this._viewstate.listsize === 0)
             {
                 console.log("List size receive for the first tiem");
-                this._viewstate.states = greadstate.DBINIT;
-
                 console.log("DB Handle is " + this.dbhandle);
-            /** Update read configuration and access handle **/    
                 this.dbreadconfig = 
                   {
-                    limit: 8,
+                    limit: 4,
                    index: 0,
                    orderby:"sequence"
                  };
                  this.dbreadconfig.dbhandle = this.dbhandle;
-                 this.updateListSize();
-               /** Start fetching page only for the first time **/
-               
-                   this.getNextPage();
-                 
+                 this.dbreadconfig.index = this.listsize;
+                this._viewstate.listsize = this.listsize;
+                this.getNextPage()
+
             }else
-            this._viewstate.newlistsize = this.listsize;
-          
+            this._viewstate.newlistsize = this._viewstate.listsize;
+
+          // this.dbconfig.index = this.listsize;
+          // this.dbconfig.size = 4;
+          // this.requestData();
+        //  this.getNextPage();
+           
         }else
         this._observerinit.listsize = "ready";
 
      }
 
      getNextPage()
-    {
-        
-         /** Check if already a read is in progress **/
-         if(this._viewstate.states != greadstate.DBINIT)
-         {
-           return;
-          }
-      
-           /** For each call fetch the next set  **/
+     {
+        /** Set Configuration Parameters **/
         this.dbreadconfig.index = (this._viewstate.listsize - this._viewstate.numberofitems);
         if(this._viewstate.listsize != this._viewstate.numberofitems )
         {
-          this._viewstate.states =  greadstate.READING;
-          console.log("Requesting data ***");
           this.requestData();
         }
         else
         console.log("List Complete");
-    }
+        
 
-    updateListSize()
-    {
-      if(this._viewstate.listsize === 0)  /** First read postdb init **/
-      { 
-         this._viewstate.listsize = this.listsize;
-         
-      }
-      else
-      this._viewstate.newlistsize =  this.listsize; /** List got updated **/
-    }
+
+     }
      
-     handleTrackEvent (evt)
-      {
-     
-          
-      console.log("Tracked");
-      if(this._viewstate.states != greadstate.DBINIT)
-      return;
-       
-      if(( this.$.itemlist.lastVisibleIndex >= (this.imagearray.length-3) ))
-             
-        {
-             console.log("Need more data");
-            // this.$.userdetails.open();
-
-            this.getNextPage();
-
-        }
-
-      }
-
      }   /** End of Component **/
     
     
 
-    window.customElements.define(MyView1.is, MyView1);
+    window.customElements.define(MyView2.is,MyView2);
   </script>
 </dom-module>

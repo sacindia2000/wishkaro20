@@ -7,3 +7,10 @@
      firebasehandle : 0,
      firestorehandle:0
  }
+
+ var greadstate =
+ {
+     INIT: 'INIT',
+     DBINIT:'DBINIT',
+     READING : 'READING'
+ }

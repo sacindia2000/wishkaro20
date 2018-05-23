@@ -1,0 +1,1 @@
+var myglobal={firebasehandle:0,firestorehandle:0},greadstate={INIT:"INIT",DBINIT:"DBINIT",READING:"READING"};

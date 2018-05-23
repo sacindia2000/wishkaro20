@@ -4,28 +4,40 @@
 <link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tab.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+
 <!-- Non polymer includes -->
 <link rel="import" href="sharedstyles.html">
 <link rel="import" href="my-firebaseinit.html">
-<link rel="import" href="my-view1.html">
+<link rel="import" href="my-view.html">
 
 <!-- Non polymer includes -->
 
 <dom-module id="wishkaro20-app">
   <template>
     <style include = "sharedstyles">
+      :host{
+        top:0px;
+      }
     </style>
     <app-header reveals slot="header">
       <app-toolbar style="height: 48px;">
           <div main-title style = "margin-left: 16px;margin-top:16px; margin-bottom:14px;" >WISH KARO</div>
       </app-toolbar>
-      <paper-tabs  id = "mytabs" selected="0" >
+      <paper-tabs  id = "mytabs" selected="{{tabselect}}" >
           <paper-tab> POPULAR </paper-tab>
           <paper-tab> CATEGORIES </paper-tab>
       </paper-tabs> 
     </app-header>
     <myfirebase-init config="{{_config}}" status = "{{firebaseinitstatus}}"></myfirebase-init>
-    <my-view1 dbready = "{{firebasedbready}}"></my-view1>
+    <iron-pages selected="{{tabselect}}">
+      <my-view1 dbready = "{{firebasedbready}}"></my-view1>
+      <my-view2 dbready = "{{firebasedbready}}"></my-view2>
+      <div>Two</div>
+      <div>Three</div>
+    </iron-pages>
+    
     </template>
 
   <script>
@@ -33,7 +45,7 @@
      * @customElement
      * @polymer
      */
-    class Wishkaro20App extends Polymer.Element {
+    class Wishkaro20App extends Polymer.GestureEventListeners (Polymer.Element) {
       static get is() { return 'wishkaro20-app'; }
       static get properties() {
         return {
@@ -65,6 +77,12 @@
             type:Boolean,
             value:false,
             notify:true
+          },
+          /** For test only **/
+          tabselect:
+          {
+            type: String,
+            value:"0"
           }
         }
       } /** Properties */
@@ -75,12 +93,14 @@
      */
       constructor ()
       {
+        Polymer.setPassiveTouchGestures(true);
         super();
-        this._observerinit = 
+         this._observerinit = 
            {
             firaebaseInitStatus : "none"
           
           }
+      
       }
       /**
      * @Ready

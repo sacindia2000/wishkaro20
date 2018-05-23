@@ -1,17 +1,36 @@
 {
-  "shell": "src/wishkaro20-app.html",
+  
+  "entrypoint": "index.html",
+  "shell": "src/wishkaro20-app/wishkaro20-app.html",
+  "fragments": [
+    "src/wishkaro20-app/my-view1.html",
+    "src/wishkaro20-app/my-view2.html",
+    "src/wishkaro20-app/my-firestoreinit.html",
+    "src/wishkaro20-app/my-firestorequery.html",
+    "src/wishkaro20-app/my-firebaseinit.html"
+    ],
+  "sources": [
+    "src/**/*",
+    "images/**/*"
+  ],
+  "extraDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/*.js"
+  ],
   "lint": {
     "rules": [
       "polymer-2"
     ]
   },
-  "builds": [{
-      "name": "es5-bundled",
-      "bundle": 
-      {
-      "js": {"minify": true},
-      "css": {"minify": true},
-      "html": {"minify": true}
-  }
-  }]
+  "builds": [
+    {
+      "preset": "es5-bundled"
+    },
+    {
+      "preset": "es6-bundled"
+    },
+    {
+      "preset": "es6-unbundled"
+    }
+  ]
 }
