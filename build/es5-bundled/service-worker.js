@@ -37,7 +37,7 @@
 /* eslint-disable indent, no-unused-vars, no-multiple-empty-lines, max-nested-callbacks, space-before-function-paren, quotes, comma-spacing */
 'use strict';
 
-var precacheConfig = [["index.html","be1d19da278a5ce7dfd2ff12c77d0a34"],["src/wishkaro20-app/my-firebaseinit.html","8e2f616fa81ca1e351516dff00574573"],["src/wishkaro20-app/my-firestoreinit.html","aae88b36f6bdcadfc5562f7e8fda7d96"],["src/wishkaro20-app/my-firestorequery.html","e6c7c1e53435ef3cc85df73352550142"],["src/wishkaro20-app/my-view1.html","0574d7683e78081034ff71b878e69894"],["src/wishkaro20-app/my-view2.html","3f3c6f7f2c58395c62456ef8a2f59b72"],["src/wishkaro20-app/wishkaro20-app.html","3898f4807d295a27ff2a691954c4df09"]];
+var precacheConfig = [["index.html","be1d19da278a5ce7dfd2ff12c77d0a34"],["src/wishkaro20-app/my-firebaseinit.html","8e2f616fa81ca1e351516dff00574573"],["src/wishkaro20-app/my-firestoreinit.html","aae88b36f6bdcadfc5562f7e8fda7d96"],["src/wishkaro20-app/my-firestorequery.html","e6c7c1e53435ef3cc85df73352550142"],["src/wishkaro20-app/my-view1.html","7b005bb6eb8c74a0049ec0be2fe6b69e"],["src/wishkaro20-app/my-view2.html","3f3c6f7f2c58395c62456ef8a2f59b72"],["src/wishkaro20-app/wishkaro20-app.html","3898f4807d295a27ff2a691954c4df09"]];
 var cacheName = 'sw-precache-v3--' + (self.registration ? self.registration.scope : '');
 
 
