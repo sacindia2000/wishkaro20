@@ -12,63 +12,87 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-overlay-behavior/iron-overlay-behavior.html">
 
 <!-- App components -->
 <link rel="import" href="sharedstyles.html">
 <link rel="import" href="my-firestoreinit.html">
 <link rel="import" href="my-firestorequery.html">
+<link rel="import" href="my-overlay.html">
 
 
 <dom-module id="my-view1">
   <template>
-      <style include= "sharedstyles" >
-         :host{
-        top:92px;
+  <style include= "sharedstyles" >
+  :host
+   {
+    top:92px;
+   }
+</style> 
 
-      }
-      [hidden] {
-          display: none !important;
-        }
-      </style> 
-    <my-firestoreinit firestoreconfig = "{{dbconfig}}" 
-                      firestorelistsize = "{{listsize}}"
-                      firestorecollectionhndl = "{{dbhandle}}"                              >
-    </my-firestoreinit>
-    <my-firestorequery firestorereadconfig = "{{dbreadconfig}}"
-                       firestorefetchdata = "{{reqdata}}"
-                       firestoredataobject = "{{dataobject}}"           
-    ></my-firestorequery> 
-    <div class = "container">
-       <iron-list style = "width:100%"items="[[imagearray]]" as="item" id = "itemlist" scroll-target= "document"  
-                  selection-enabled selected-item = "{{selectedItem}}" grid>
-        <template>
-            <div class = "flexchild"style="width:calc(50% - .5px);"> 
-                <iron-image  class = "imagecontainer" sizing = "cover" style = "width:calc(100% - 4px); height:180px; background-color: lightgray;"
-                preload fade src=[[item.webp]] error="{{imageloaderror}}"></iron-image>
+<my-firestoreinit firestoreconfig = "{{dbconfig}}" 
+firestorelistsize = "{{listsize}}"
+firestorecollectionhndl = "{{dbhandle}}"                              >
+</my-firestoreinit>
+
+<my-firestorequery firestorereadconfig = "{{dbreadconfig}}"
+ firestorefetchdata = "{{reqdata}}"
+ firestoredataobject = "{{dataobject}}"           
+></my-firestorequery> 
+
+<my-overlay id="backdrop" with-backdrop 
+  style = " width:auto; height:auto;  padding: 0px 0px 0px 0px;">
+  <div class ="lightboxcontainer">
+    <div class = "lightboxappheader">
+    <paper-icon-button icon="arrow-back"
+    style="color: white; left:16px; top:16px; "
+    on-click = "backkeyhandler">
+   </paper-icon-button>
+   <paper-icon-button class = "lightboxsocialpos" icon="social:share"  style="color: white; top:16px;"
+    on-click = "sharekeyhandler">
+  </paper-icon-button>
+   </div>
+  <iron-image   style = "position:fixed; top: 100px;margin-left:8px;  
+  width:calc(100% - 16px); height:80%; z-index:110;" sizing="contain"
+  src= "{{selectedimageurl}}" error="{{imageloaderror}}"></iron-image>
+ </div>  
+</my-overlay>
+
+    
+<div class = "container">
+    <iron-list style = "width:100%"items="[[imagearray]]" as="item" id = "itemlist" scroll-target= "document"  
+               selection-enabled  selected-item = "{{selecteditem}}" grid>
+     <template>
+          <div class = "flexchild"style="width:calc(50% - .5px);"> 
+              <iron-image  class = "imagecontainer" sizing = "cover" style = "width:calc(100% - 4px); height:180px; background-color: lightgray;"
+              preload fade src=[[item.webp]] error="{{imageloaderror}}"></iron-image>
          </div>
-        </template>
-      </iron-list>
-      
-      <template is="dom-if" if="{{!_hidespinner}}">
+     </template>
+    </iron-list>
+    
+    <template is="dom-if" if="{{!_hidespinner}}">
       <div class = "spinnerpos">
-        <paper-spinner active> </paper-spinner>
+        <paper-spinner active class="thick" > </paper-spinner>
       </div>
-      </template>
-      
-      <paper-toast id = "papertoast" class="fit-bottom" text="Hello world!" >
-      <paper-button id = "papertoastbutton" style= "left:16px;" onclick="displayToastClicked"  
-                      >
-      </paper-button>
-      </paper-toast>
-     </div> 
-      
-  </template>
-  <script>
+    </template>
+    <paper-toast id = "papertoast" class="fit-bottom" text="Hello world!" >
+    <paper-button id = "papertoastbutton" style= "left:16px;" on-click="displayToastClicked"></paper-button>
+    </paper-toast>
+</div> 
+</template>
+
+<script>
+ /** Const config parameters to be used for forestore config **/
+ const LIST_LIMIT = 30;
+ const COLLECTION_NAME = "popular";
+ const SEQUENCE_PARAMETER = "sequence";  
     /**
      * @customElement
      * @polymer
@@ -95,7 +119,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value:"null",
             notify:true
           },
-          /** Set Data base configuration **/
+          /** Set Database read configuration **/
           dbreadconfig:
           {
             type:Object,
@@ -116,7 +140,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value:"null",
             observer:"processData"
           },
-         
       /** Observer gets invoked each time list gets updated **/
           listsize:
           {
@@ -124,7 +147,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value:0,
             observer: "DatabaseSize"
           },
-          /** handle to collection **/
+          /** Handle to collection **/
           dbhandle:
           {
             type:Object,
@@ -140,6 +163,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           value:false,
           observer: "ImageLoadError"
           },
+        /**Observer to be invoked on item selection in iron-list **/  
+          selecteditem:
+          {
+            type: Object,
+            observer: "ImageSelected"
+        
+          },
+         /** Store the previous selected object **/ 
+          _previousselection:
+          {
+            type: Object
+          },
+         /** Please check the code hard to write here **/ 
+          _selectiontimeout:
+          {
+            type:Object
+          },
+         /** Image URL to be passed onto overlay **/ 
+          selectedimageurl:
+          {
+            type: String
+          },
          /** Hide the spinner at complete load etc **/ 
           _hidespinner:
           {
@@ -150,16 +195,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           statemachine:
           {
             type:Object,
-          
+          },
+         /** Store states of toast to take action */ 
+          toaststate:
+          {
+            type:Object
+          },
+          /** URI to hold storage location **/
+          androiduri:
+          {
+            type: String,
+            valye: null
+
           } 
                }
       }
       
+
      /**
      * constructor
      * Polymer life cycle function  
      */
-
       constructor()
       {
         super();
@@ -171,11 +227,40 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             dbready: "none",
             dataobject : "none",
             listsize : "none",
-            imageloaderror : "none"
+            imageloaderror : "none",
+            imageselected: 'none'
           };
         this.imagearray = [];
+        this.stateMachineConstructor();
+        this.toaststate =
+        {
+          NEW_CONTENT: 'newcontent',
+          MOVE_TAB: 'movetab',
+        }
 
-        this.statemachine =
+      } /* End of constructor **/
+     
+     
+     /*
+     * 
+     * Ready polymer life cycle element
+     */
+       ready()
+      {
+        super.ready();
+        this.initializeStateMachine();
+        /** register for track events and make them non blocking **/
+        Polymer.Gestures.addListener(this, 'track', e => this.handleTrackEvent(e));
+        Polymer.Gestures.setTouchAction(this,"auto");
+      }
+     /*
+     * 
+     * Init the statemachine and all other variables 
+     */
+     stateMachineConstructor()
+     {
+        
+      this.statemachine =
       {
            state: 'idle',
            action:
@@ -183,153 +268,245 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
              FIREBASEINIT:'firebaseinit',
              FIREASTOREINIT_SUCCESS:'firestoreinitsuccess',
              TRACK:'trackevent',
-             HANDLE_DATA : 'handledata'
+             HANDLE_DATA : 'handledata',
+             LIST_UPDATED : 'newdataind',
+             ITEM_SELECTED : 'urlSelected',
+             SHARE_KEY: "shareClicked",
+             BACK_KEY : "backClicked",
+             TOAST_CLICKED: "toastClicked"
            },
            list:
            {
-             size: 0,
-             newsize: 0,
-             viewsize:0,
-             pagelen:0
+             size: 0,       /** Current size of the list **/
+             newsize: 0,    /** New size updated in the backend **/ 
+             viewsize:0,    /** Total items in the view **/
+             pagelen:0      /** Min size to be requested each time **/ 
            },
            transitions:
            {
-                  idle:{
-                          initialize : function (traget)
-                          {
-                             this.target = traget;
-                            // this.target.state = 'ready';
-                          },
-                          firebaseinit: function (data)
-                          {
-                            /** Update Firestore Config to get size **/
-                            this.target.dbconfig = 
-                                        {
-                                           collection: "popular",
-                                           orderby:"sequence"
-                                        };
-                             console.log("Firebase Init complete");
-                          } ,
-
-                          firestoreinitsuccess : function (data,handle)
-                          {
-                             console.log("FirestoreInit success List size = " + data );
-                             this.target.statemachine.list.size = data;
-                             /** Total list size **/
-                             this.target.dbreadconfig =
-                                  {
-                                      limit: 8,
-                                      index: 0,
-                                      orderby:"sequence"
-                                  };
-                             /** Change state **/
-                             this.target.statemachine.state = 'processing';
-                            /** Request for first set of data **/       
-                            this.target.dbreadconfig.dbhandle = this.target.dbhandle;
-                            /** Configure as per current count **/
-                            this.target.dbreadconfig.index =  this.target.statemachine.list.size;
-                            /** Toggele each time to get data **/
-                            this.target.reqdata = !this.target.reqdata;
-                            
-                             
-                          },
-                          firestoreiniterror : function (data)
-                          {
-                             console.log("Firestore Init Error");
-                          }
-
-                       },
-                   ready:
+             idle:{
+                   initialize : function (traget)
+                   {
+                   this.target = traget;
+                   
+                   },
+                   firebaseinit: function (data)
+                   {
+                    /** Update Firestore Config to get size **/
+                    this.target.dbconfig = 
+                         {
+                          collection:COLLECTION_NAME,
+                          orderby:SEQUENCE_PARAMETER
+                         };
+                    console.log("Firebase Init complete");
+                  } ,
+                  firestoreinitsuccess : function (data,handle)
+                  {
+                    console.log("FirestoreInit success List size = " + data );
+                    this.target.statemachine.list.size = data;
+                    /** Total list size **/
+                    this.target.dbreadconfig =
+                       {
+                         limit: LIST_LIMIT,
+                         index: 0,
+                         orderby:SEQUENCE_PARAMETER
+                       };
+                     /** Change state **/
+                      this.target.statemachine.state = 'processing';
+                     /** Request for first set of data **/       
+                     this.target.dbreadconfig.dbhandle = this.target.dbhandle;
+                     /** Configure as per current count **/
+                     this.target.dbreadconfig.index =  this.target.statemachine.list.size;
+                     /** Toggele each time to get data **/
+                     this.target.reqdata = !this.target.reqdata;
+                 },
+                 firestoreiniterror : function (data)
+                 {
+                    console.log("Firestore Init Error");
+                 },
+                 newdataind : function (data)
+                 {
+                   console.log("New data is available");
+                   this.target.displayToast("New data idle","ok",2000);
+                   this.target.statemachine.listsize = data;
+                 }
+               },
+               ready:
+                 {
+                  initialize : function (traget)
+                   {
+                     this.target = traget;
+                  }, 
+                  newdataind : function (data)
+                  {
+                   console.log("New data is available");
+                   this.target.displayToast("New data ready","ok",0);
+                   this.target.statemachine.list.newsize = data;
+                  },
+                  trackevent : function ( evt)
+                  {
+                    console.log("Tracking started");
+                    
+                    if(this.target.statemachine.list.newsize > 0)
                       {
-                        initialize : function (traget)
-                          {
-                             this.target = traget;
-                            // this.target.state = 'ready';
-                          }, 
-                         newdataind : function (data)
-                         {
-
-                         },
-                         trackevent : function ( evt)
-                         {
-                          console.log("Tracking started");
-                          /** Check whether page need to be pre fetched **/
-                          if(( this.target.$.itemlist.lastVisibleIndex >= (this.target.imagearray.length-5) )
-                              && (this.target.statemachine.list.size > this.target.statemachine.list.viewsize) )
-                             {
-                                if(this.target.statemachine.list.size > this.target.statemachine.list.viewsize)
-                                {
-                                  this.target.dbreadconfig.index = this.target.statemachine.list.size - this.target.statemachine.list.viewsize;
-                                  /** Change state **/
-                                  this.target.statemachine.state = 'processing';
-                                  /** Toggele each time to get data **/
-                                  this.target.reqdata = !this.target.reqdata;
-                                }
+                       /** Update the new size and reset the counter **/
+                       /*
+                       this.target.statemachine.list.size = this.target.statemachine.list.newsize;
+                       this.target.statemachine.list.viewsize = 0;
+                       this.target.statemachine.list.newsize =0;
+                       this.target.imagearray.length =0;
+                       this.target.dbreadconfig.index = this.target.statemachine.list.size;
+                       */
+                       /** Change state **/
+                      // this.target.statemachine.state = 'processing';
+                       /** Toggele each time to get data **/
+                      // this.target.reqdata = !this.target.reqdata;
+                      }
+                   
+                   /** Check whether page need to be pre fetched **/
+                    if(( this.target.$.itemlist.lastVisibleIndex >= (this.target.imagearray.length-5) )
+                          && (this.target.statemachine.list.size > this.target.statemachine.list.viewsize) )
+                            {
+                             this.target.dbreadconfig.index = this.target.statemachine.list.size - this.target.statemachine.list.viewsize;
+                              /** Change state **/
+                              this.target.statemachine.state = 'processing';
+                              /** Toggele each time to get data **/
+                               this.target.reqdata = !this.target.reqdata;
                              }
                             
-                         },
-                         itemclicked : function()
-                         {
-                           console.log("Image item clciked");
-                         },
-                         toastclicked : function()
-                         {
-                           console.log("Toast clicked");
-                         }
-                      },
-                      processing:
-                      {
-                        initialize : function (traget)
-                          {
-                             this.target = traget;
-                            // this.target.state = 'ready';
-                          }, 
-                         error : function()
-                         {
-                           console.log("Error occured");
-                         },
-                         handledata: function(dataobj)
-                         {
-                          console.log("Processing Data");
-                          /** Push the object to view **/ 
-                           var imageobject = new Object();
-                           imageobject.webp = dataobj.get("webp");
-                           imageobject.jpg = dataobj.get("jpg");
-                           this.target.push('imagearray',imageobject);
-                           /** Append count of objects within the view **/
-                           this.target.statemachine.list.viewsize++;
-                           this.target.statemachine.list.pagelen++;
-                           /** Check for any state changes **/
-                           if(this.target.statemachine.list.pagelen === this.target.dbreadconfig.limit)
-                           {
-                             console.log("Completed page read");
-                             this.target.statemachine.list.pagelen = 0;
-                              /** Change state **/
-                              this.target.statemachine.state = 'ready';
-                           }
-                           if(this.target.statemachine.list.viewsize === this.target.statemachine.list.size)
-                           {
-                              console.log("Complete list is through");
-                              this.target.statemachine.list.pagelen = 0;
-                              /** Change state **/
-                              this.target.statemachine.state = 'ready';
-                              /** No need to fetch data so close spinner **/
-                              this.target._hidespinner = true;
+                  },
+                  urlSelected : function(url)
+                  {
+                    console.log("Image item clciked READY");
+                    this.target.selectedimageurl = url.webp;
+                    /** Change state **/
+                    this.target.statemachine.state = 'lightbox';
+                    this.target.openoverlay();
+                    /** Start preparing for jpeg image fetch **/
+                    var t0 = performance.now();
+                    var request = new Request(url.jpg);
+                    var Abort = new AbortController();
+                    var Signal = Abort.signal;
+                    fetch(url.jpg,
+                    ).then((response) => {
+                         response.arrayBuffer().then((buffer) => {
+                         var byteArray = new Uint8Array(buffer);
+                         var arr = new Uint8Array(byteArray.length);
+                         for(var i = 0; i < byteArray.length; i++) {
+                                 arr[i] = byteArray[i];
+                          }
+                     this.target.androiduri = window.Android.saveAsJPEG("test.jpg",arr);
+                     console.log("RETURN RESULT" + this.androiduri);
+                   var t1 = performance.now();
+             console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
+                         });
+  
+                  });
+                  },
+                  toastClicked : function()
+                  {
+                    console.log("Toast clicked");
+                  }
+               },
+               processing:
+                {
+                 initialize : function (traget)
+                   {
+                     this.target = traget;
+                   }, 
+                   error : function()
+                   {
+                     console.log("Error occured");
+                   },
+                   handledata: function(dataobj)
+                   {
+                     console.log("Processing Data");
+                     /** Push the object to view **/ 
+                     var imageobject = new Object();
+                     imageobject.webp = dataobj.get("webp");
+                     imageobject.jpg = dataobj.get("jpg");
+                     this.target.push('imagearray',imageobject);
+                     /** Append count of objects within the view **/
+                     this.target.statemachine.list.viewsize++;
+                     this.target.statemachine.list.pagelen++;
+                     /** Check for any state changes **/
+                     if(this.target.statemachine.list.pagelen === this.target.dbreadconfig.limit)
+                       {
+                        console.log("Completed page read");
+                        this.target.statemachine.list.pagelen = 0;
+                        /** Change state **/
+                        this.target.statemachine.state = 'ready';
+                        }
+                      if(this.target.statemachine.list.viewsize === this.target.statemachine.list.size)
+                        {
+                          console.log("Complete list is through");
+                           this.target.statemachine.list.pagelen = 0;
+                           /** Change state **/
+                           this.target.statemachine.state = 'ready';
+                           /** No need to fetch data so close spinner **/
+                            this.target._hidespinner = true;
 
                            }
                            
+                         },
+                         newdataind : function (data)
+                         {
+                           console.log("New data is available");
+                           this.target.statemachine.newsize = data;
+                           this.target.displayToast("New data processing","ok",0);
+                         },
+                         toastClicked : function()
+                         {
+                           console.log("Toast Clicked");
                          }
-                      }    
-           }
-      }        
+                      },
+                      lightbox:
+                      {
+                        initialize : function (traget)
+                          {
+                             this.target = traget;
+                          },
+                          trackevent : function ( evt)
+                         {
+                            console.log("Ignore tracking events for now ");
+                         
+                         },
+                         shareClicked: function()
+                         {
+                           console.log("Share key pressd");
+                           window.Android.shareURI(this.target.androiduri);
+                           
+                         },
+                         backClicked: function ()
+                         {
+                             
+                          console.log("Back key pressed");
+                          /** Change state **/
+                          this.target.statemachine.state = 'ready';
+                          this.target.closeoverlay();
 
-      } /*8 End of constructor **/
+                         } ,
+                         newdataind : function (data)
+                         {
+                           console.log("New data is available");
+                           this.target.statemachine.newsize = data;
+                           this.target.displayToast("New data processing","ok",0);
+
+                         }  
+
+                      }  /* End of lightbox state */  
+           } /* End of all states **/
+      } /* End of state machine Object */    
+
+     } /* End of function */
+
 
       initializeStateMachine()
       {
         this.statemachine.transitions['idle']['initialize'](this);
         this.statemachine.transitions['ready']['initialize'](this);
         this.statemachine.transitions['processing']['initialize'](this);
+        this.statemachine.transitions['lightbox']['initialize'](this);
       }
 
        setaction(action,data)
@@ -339,14 +516,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 
-      ready()
-      {
-        super.ready();
-        this.initializeStateMachine();
-        Polymer.Gestures.addListener(this, 'track', e => this.handleTrackEvent(e));
-        Polymer.Gestures.setTouchAction(this,"auto");
-        console.log("My view 1 is ready");
-      }
+     
 
        ImageLoadError()
       {
@@ -355,9 +525,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.log("Image Loaded");
         this.imageload = false;        
         }else
-        this._observerinit.imageloaderror = "ready"
+        this._observerinit.imageloaderror = "ready";
       }
 
+      ImageSelected()
+      {
+        if(this._observerinit.imageselected === "ready")
+        {
+          console.log("ImageSelected event" + this.selecteditem );
+          if(this.selecteditem === null)
+         {
+          console.log("Item NULL"); 
+         this._selectiontimeout= setTimeout(function() {
+          console.log("Timed Out Previous item"); 
+          console.log(this._previousselection);
+          this.setaction(this.statemachine.action.ITEM_SELECTED,this._previousselection);          
+
+         // this.selecteditem = this._previousselection;         
+                 }.bind(this),50);
+         return;        
+         }else
+         {
+          console.log("Item URL" + this.selecteditem.webp);
+          clearTimeout(this._selectiontimeout);
+          this._previousselection = JSON.parse(JSON.stringify(this.selecteditem));
+          this.setaction(this.statemachine.action.ITEM_SELECTED,this.selecteditem);          
+         }
+       }else
+        this._observerinit.imageselected = "ready"
+
+      }
       /**
      * @databaseReady
      * Observer invoked to inform completion of FireStore Init 
@@ -378,7 +575,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if(this._observerinit.listsize === "ready")
         {
            console.log("List Size " + this.listsize);
-           this.setaction(this.statemachine.action.FIREASTOREINIT_SUCCESS,this.listsize);          
+           if( this.statemachine.state === 'idle')
+           this.setaction(this.statemachine.action.FIREASTOREINIT_SUCCESS,this.listsize);
+           else
+           this.setaction(this.statemachine.action.LIST_UPDATED,this.listsize);
         }else
         this._observerinit.listsize = "ready";
     }
@@ -418,14 +618,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this.$.papertoast.open();
      }
      
+     displayToastClicked()
+     {
+       console.log("Display toast clicked");
+       this.$.papertoast.close();
+       this.statemachine.list.size = this.statemachine.list.newsize;
+       this.statemachine.list.viewsize = 0;
+       this.statemachine.list.newsize =0;
+       this.imagearray.length =0;
+       this.dbreadconfig.index = this.statemachine.list.size;
+       /** Change state **/
+       this.statemachine.state = 'processing';
+       /** Toggele each time to get data **/
+       this.reqdata = !this.reqdata;
+     }
+    
+    openoverlay()
+      {
+        this.$.backdrop.open();
+        document.body.style.overflow = 'hidden';
 
-     /*** All interafces for view **/
+      }
+     
+      closeoverlay()
+      {
+        this.$.backdrop.close();
+        document.body.style.overflow = '';
 
-     /** Testing state machine **/
-      
+      }
      
-     
-     /** Testing state machine **/
+     backkeyhandler()
+     {
+      this.setaction(this.statemachine.action.BACK_KEY);
+
+     }
+
+     sharekeyhandler ()
+     {
+  
+      this.setaction(this.statemachine.action.SHARE_KEY);
+       
+     }
+
 
      }   /** End of Component **/
     

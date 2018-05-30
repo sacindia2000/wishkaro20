@@ -29,7 +29,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         --app-primary-color: #3F51B5;
         --app-secondary-color: #FF4081;
       }
-   
+      [hidden] {
+    display: none !important;
+       }  
+      iron-overlay-backdrop {
+  --iron-overlay-backdrop-background-color: #fff;
+  --iron-overlay-backdrop-opacity: 0.9;
+}   
   iron-list {
     flex: 1 1 auto;
   }
@@ -85,6 +91,41 @@ paper-spinner, paper-spinner-lite {
           position: relative;
           left:50%;
            }
+           /*** Testing Modal view **/
+   .lightboxcontainer
+{
+  position:fixed;
+  background-color: grey;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index:105;
+}
+   .lightboxappheader
+{
+  width:100%;
+  height:56px;
+  position: fixed;
+  top:0px;
+}
+.lightboximage
+{
+  top:64px;
+  position: fixed;
+  height: 80%;
+}
+.lightboxsocialpos
+{
+  right:0;
+  margin-right:16px;
+  position: absolute;
+}
+paper-spinner {
+   width: 50px;
+   height: 50px;
+}
+   /* The Modal (background) */
     </style>
   </template>
 </dom-module>

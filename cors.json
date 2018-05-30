@@ -1,0 +1,15 @@
+[
+  {
+    "origin": ["http://127.0.0.1:8081"],
+    "responseHeader": ["Content-Type"],
+    "method": ["GET"],
+    "maxAgeSeconds": 3600
+  },
+  {
+      "origin": ["https://wishkaro-94738.firebaseapp.com"],
+      "responseHeader": ["Content-Type"],
+      "method": ["GET"],
+      "maxAgeSeconds": 3600
+  }
+]
+

@@ -396,11 +396,23 @@
       "type": "document",
       "weight": 1
     },
+    "../iron-icons/iron-icons.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-icons/social-icons.html": {
+      "type": "document",
+      "weight": 1
+    },
     "src/wishkaro20-app/my-firestoreinit.html": {
       "type": "document",
       "weight": 1
     },
     "src/wishkaro20-app/my-firestorequery.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "src/wishkaro20-app/my-overlay.html": {
       "type": "document",
       "weight": 1
     },
@@ -614,7 +626,7 @@
       "type": "document",
       "weight": 1
     },
-    "../paper-spinner/paper-spinner-lite.html": {
+    "../paper-spinner/paper-spinner.html": {
       "type": "document",
       "weight": 1
     },
@@ -627,10 +639,6 @@
       "weight": 1
     },
     "../paper-spinner/paper-spinner-styles.html": {
-      "type": "document",
-      "weight": 1
-    },
-    "../paper-spinner/paper-spinner.html": {
       "type": "document",
       "weight": 1
     },
@@ -702,7 +710,43 @@
       "type": "document",
       "weight": 1
     },
+    "../iron-icons/iron-icons.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-icon/iron-icon.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-meta/iron-meta.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-iconset-svg/iron-iconset-svg.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-icons/social-icons.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-icon-button/paper-icon-button.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-behaviors/paper-inky-focus-behavior.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-styles/default-theme.html": {
+      "type": "document",
+      "weight": 1
+    },
     "src/wishkaro20-app/sharedstyles.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-spinner/paper-spinner-lite.html": {
       "type": "document",
       "weight": 1
     },
@@ -715,6 +759,10 @@
       "weight": 1
     },
     "src/wishkaro20-app/my-firestorequery.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "src/wishkaro20-app/my-overlay.html": {
       "type": "document",
       "weight": 1
     }
