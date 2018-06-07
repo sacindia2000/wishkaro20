@@ -5,7 +5,8 @@
  var myglobal=
  {
      firebasehandle : 0,
-     firestorehandle:0
+     firestorehandle:0,
+     
  }
 
  var greadstate =

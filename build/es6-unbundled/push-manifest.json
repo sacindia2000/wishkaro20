@@ -68,7 +68,7 @@
       "type": "document",
       "weight": 1
     },
-    "../app-layout/app-header/app-header.html": {
+    "../app-route/app-route.html": {
       "type": "document",
       "weight": 1
     },
@@ -181,6 +181,26 @@
       "weight": 1
     },
     "../polymer/lib/legacy/mutable-data-behavior.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../app-route/app-location.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-location/iron-location.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-location/iron-query-params.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../app-route/app-route-converter-behavior.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../app-layout/app-header/app-header.html": {
       "type": "document",
       "weight": 1
     },
@@ -300,6 +320,10 @@
       "type": "document",
       "weight": 1
     },
+    "../iron-icons/iron-icons.html": {
+      "type": "document",
+      "weight": 1
+    },
     "src/wishkaro20-app/sharedstyles.html": {
       "type": "document",
       "weight": 1
@@ -328,7 +352,7 @@
       "type": "script",
       "weight": 1
     },
-    "src/wishkaro20-app/my-view.html": {
+    "src/wishkaro20-app/my-view1.html": {
       "type": "document",
       "weight": 1
     },
@@ -341,10 +365,6 @@
       "weight": 1
     },
     "../iron-flex-layout/iron-flex-layout-classes.html": {
-      "type": "document",
-      "weight": 1
-    },
-    "src/wishkaro20-app/my-view1.html": {
       "type": "document",
       "weight": 1
     },
@@ -396,10 +416,6 @@
       "type": "document",
       "weight": 1
     },
-    "../iron-icons/iron-icons.html": {
-      "type": "document",
-      "weight": 1
-    },
     "../iron-icons/social-icons.html": {
       "type": "document",
       "weight": 1
@@ -417,6 +433,10 @@
       "weight": 1
     },
     "src/wishkaro20-app/my-view2.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "src/wishkaro20-app/my-view3.html": {
       "type": "document",
       "weight": 1
     }
@@ -972,11 +992,7 @@
       "type": "document",
       "weight": 1
     },
-    "src/wishkaro20-app/sharedstyles.html": {
-      "type": "document",
-      "weight": 1
-    },
-    "../paper-spinner/paper-spinner-lite.html": {
+    "../paper-spinner/paper-spinner.html": {
       "type": "document",
       "weight": 1
     },
@@ -992,7 +1008,111 @@
       "type": "document",
       "weight": 1
     },
-    "../paper-spinner/paper-spinner.html": {
+    "../paper-toast/paper-toast.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-a11y-announcer/iron-a11y-announcer.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-overlay-behavior/iron-overlay-behavior.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-fit-behavior/iron-fit-behavior.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-overlay-behavior/iron-overlay-manager.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-overlay-behavior/iron-overlay-backdrop.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-overlay-behavior/iron-scroll-manager.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-overlay-behavior/iron-focusables-helper.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-button/paper-button.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-flex-layout/iron-flex-layout.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-behaviors/paper-button-behavior.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-behaviors/iron-button-state.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-behaviors/iron-control-state.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-behaviors/paper-ripple-behavior.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-ripple/paper-ripple.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-styles/element-styles/paper-material-styles.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-styles/shadow.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-icons/iron-icons.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-icon/iron-icon.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-meta/iron-meta.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-iconset-svg/iron-iconset-svg.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../iron-icons/social-icons.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-icon-button/paper-icon-button.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-behaviors/paper-inky-focus-behavior.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-styles/default-theme.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "src/wishkaro20-app/sharedstyles.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "../paper-spinner/paper-spinner-lite.html": {
       "type": "document",
       "weight": 1
     },
@@ -1005,6 +1125,10 @@
       "weight": 1
     },
     "src/wishkaro20-app/my-firestorequery.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "src/wishkaro20-app/my-overlay.html": {
       "type": "document",
       "weight": 1
     }

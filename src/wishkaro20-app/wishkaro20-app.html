@@ -1,4 +1,10 @@
+<!--
+  Main Application managing launch and control flow 
+-->
+
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
@@ -6,11 +12,14 @@
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 
 <!-- Non polymer includes -->
 <link rel="import" href="sharedstyles.html">
 <link rel="import" href="my-firebaseinit.html">
-<link rel="import" href="my-view.html">
+<link rel="import" href="my-view1.html">
+<link rel="import" href="my-view2.html">
+<link rel="import" href="my-view3.html">
 
 <!-- Non polymer includes -->
 
@@ -20,20 +29,34 @@
       :host{
         top:0px;
       }
+      [hidden] {
+          display: none !important;
+        }   
     </style>
+    
+    <app-location route="{{route}}"></app-location>
+    <app-route route="{{route}}" pattern="/:view" data="{{data}}"></app-route>
+
     <app-header reveals slot="header">
+
       <app-toolbar style="height: 48px;">
-          <div main-title style = "margin-left: 16px;margin-top:16px; margin-bottom:14px;" >WISH KARO</div>
+        <paper-icon-button hidden$= "{{hidebackarrow}}" icon="arrow-back" on-click = "backarrowtapped"> </paper-icon-button>
+        <div main-title style = "margin-left: 16px;margin-top:16px; margin-bottom:14px;" >{{header}}</div>
       </app-toolbar>
-      <paper-tabs  id = "mytabs" selected="{{tabselect}}" >
-          <paper-tab> POPULAR </paper-tab>
-          <paper-tab> CATEGORIES </paper-tab>
+      <template is="dom-if" if="{{!hidetabs}}">
+      <paper-tabs  id = "mytabs" selected="{{data.view}}" attr-for-selected="name" >
+          <paper-tab name = "view1" > POPULAR </paper-tab>
+          <paper-tab name = "view2" > CATEGORIES </paper-tab>
       </paper-tabs> 
+    </template>
     </app-header>
     <myfirebase-init config="{{_config}}" status = "{{firebaseinitstatus}}"></myfirebase-init>
-    <iron-pages selected="{{tabselect}}">
-      <my-view1 dbready = "{{firebasedbready}}"></my-view1>
-      <my-view2 dbready = "{{firebasedbready}}"></my-view2>
+    <iron-pages      selected="{{data.view}}"
+    attr-for-selected="name"
+    fallback-selection="view1">
+      <my-view1 name="view1" dbready = "{{firebasedbready}}" overlayset = "{{keyhandler}}"></my-view1>
+      <my-view2 name="view2" viewconfig = "{{view2config}}" dbready = "{{firebasedbready}}" categoryselected = "{{categoryselect}}"></my-view2>
+      <my-view3 name="view3" dbready = "{{firebasedbready}}" waitonread = "{{startreading}}"></my-view3> 
     </iron-pages>
     
     </template>
@@ -81,9 +104,143 @@
           {
             type: String,
             value:"0"
+          },
+          categoryselect:
+          {
+            type :Object,
+            value: 'null',
+            observer: 'categorySelected',
+          },
+          data: {
+            type: Object,
+            reflectToAttribute: true,
+            observer: '_pageChanged',
+            value: 'view1',
+            notify:true
+          },
+        /** Display title **/  
+          header:
+          {
+            type:String,
+            value: "Wish Karo"
+          },
+        /** Hide back arrow in main screen **/
+        hidebackarrow:
+        {
+          type:Boolean,
+          value:true
+        },
+        /** Hide back arrow in main screen **/
+        hidetabs:
+        {
+          type:Boolean,
+          value:false
+        },
+        /** overlay set **/
+        keyhandler:
+        {
+          type:String,
+          notify: true,
+          observer:"_keyHandlerUpdated"
+        },
+        /** View object **/
+        _viewlayout:
+        {
+          type:Object
+        } ,
+        /** Page Layout **/
+        _pagelayout:
+        {
+          type:Object
+        },
+        /** View configurations **/
+        view2config:
+        {
+          type:Object,
+          value: 
+          {
+            collection:"category",
+            sequence : "sequence",
+            limit : 30
           }
+        },
+        /** testing only **/
+        startreading:
+        {
+          type:Object,
+          notify:true
+        }
+
         }
       } /** Properties */
+
+      _keyHandlerUpdated()
+      {
+        console.log("Key handler updated" + this.keyhandler);
+        if(this.keyhandler === "Ignored" )
+        {
+          if( (this.data.view != "view2") && (this.data.view != "view1") )
+          {
+            console.log("Move to view 2");
+            this.set("data.view","view2");
+            }
+          else if (this.data.view === "view2")
+          {
+            console.log("Move to view 1");
+            this.set("data.view","view1");}
+          else
+          {
+            console.log("Exit the app");
+            window.Android.exitApp();
+          }
+
+
+        }
+        
+      }
+      
+      categorySelected ()
+      {
+        if(this._observerinit.categoryselect === "ready")
+        {
+          console.log("category selected " + this.categoryselect.title);
+          console.log("category collection " + this.categoryselect.collection);
+          this.header = this.categoryselect.title;
+          this.startreading.collection = this.categoryselect.collection ;
+          this.notifyPath('startreading.collection');
+        //  this.set("startreading",[]);
+          this.set("data.view","view3");
+          return;
+        //  this.hidebackarrow = false;
+        //  this.hidetabs = true;
+          switch(this.categoryselect.name)
+          {
+            case 'morning':
+                  console.log ("Good Morning");
+          //        this.header = "Good Morning";
+                console.log(this._viewlayout[this.categoryselect.name]["view"]);
+                  this.set("data.view",this._viewlayout[this.categoryselect.name]["view"]);
+                  break;
+            case 'night':
+                  console.log ("Good Night");
+            //      this.header = "Good Night";
+            this.set("data.view",this._viewlayout[this.categoryselect.name]["view"]);
+                  break;
+            case 'birthday':
+                  console.log ("Happy Birthday");
+              //    this.header = "Happy Birthday";
+              this.set("data.view",this._viewlayout[this.categoryselect.name]["view"]);
+                  break;
+            case 'inspiration':
+                 console.log ("Inspiration");
+                // this.header = "Motivational Quotes";
+                this.set("data.view",this._viewlayout[this.categoryselect.name]["view"]);
+                  break;                   
+          }
+         // this.set("data.view","view3");
+        }else
+        this._observerinit.categoryselect = "ready";
+      }
       /**
      * @construct
      * polymer
@@ -95,9 +252,37 @@
         super();
          this._observerinit = 
            {
-            firaebaseInitStatus : "none"
+            firaebaseInitStatus : "none",
+            categoryselect : 'none',
+            _pagechanged : 'none'
+          };
           
-          }
+       
+         this.startreading = 
+         {
+           state:false,
+           collection:""
+         };
+           
+         this._viewlayout = {
+            "Popular":{"view":"view1","header":"WISH KARO","tabs":true,"backarrow":false},
+            "Category":{"view":"view2","header":"WISH KARO","view":"view2","tabs":true,"backarrow":false},
+            "morning":{"view":"view3","header":"Good Morning","tabs":false,"backarrow":true},
+            "night":{"view":"view3","header":"Good Night","tabs":false,"backarrow":true},
+            "inspiration":{"view":"view3","header":"Inspirational Quotes","tabs":false,"backarrow":true},
+            "birthday":{"view":"view3","header":"Happy Birthday","tabs":false,"backarrow":true}
+                  };
+         this._pagelayout =
+               { 
+                   "view1":"Popular",
+                   "view2":"Category",
+                    "view3":"morning",
+                    "view4":"night",
+                    "view5":"inspiration",
+                    "view6":"birthday"
+                    
+               };         
+
       
       }
       /**
@@ -125,6 +310,7 @@
      */
       firaebaseInitStatus ( )
       {
+         
          if(this._observerinit.firaebaseInitStatus === "ready")
          {
              console.log("Firebase Init" + this.firebaseinitstatus);
@@ -133,9 +319,41 @@
          this._observerinit.firaebaseInitStatus = "ready";
       }
 
+      _pageChanged()
+      {
+        if(this._observerinit._pagechanged === "ready")
+         {
+           
+         //  var view = this._pagelayout[this.data.view];
+         //  console.log("Page Changed to " + view);
+         if(this.data.view === 'view3')
+         {
+           this.hidetabs =true;
+           this.hidebackarrow = false;
+         }
+         
+
+         }
+         this._observerinit._pagechanged = 'ready';      
+
+      }
+
+      _backkeyPressed()
+      {
+        console.log("Back key pressed by the user check wher yu are and decide");
+        this.keyhandler = "Key Press";
+      }
+
+      backarrowtapped()
+      {
+         console.log("Back arrow tapped ");
+         this.hidebackarrow = true;
+         this.hidetabs = false;
+         this.header = "Wish Karo";
+         this.set("data.view","view2");
+      }
 
      }
-
     window.customElements.define(Wishkaro20App.is, Wishkaro20App);
   </script>
 </dom-module>

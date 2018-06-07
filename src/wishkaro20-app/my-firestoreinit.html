@@ -35,7 +35,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           {
               type:Object,
               value:"null",
-              observer:"configFirestore"
+            //  observer:"configFirestore"
           },
           firestorecollectionhndl:
           {
@@ -59,6 +59,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
          };
       }
+     
+      static get observers() {
+        return [
+            'configFirestore(firestoreconfig.collection)'
+        ]
+      }
+      
      /*
      * 
      * polymer Life Cycle Function
@@ -91,11 +98,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       {
         if(this._observerinit.configFirestore === "ready")  
         {
-           if( (this.firestorecollectionhndl === "null") || (typeof this.firestorecollectionhndl === "undefined")  )
-           {  
+          
             this.initfirestore(this.firestoreconfig.collection); /* Set parameters */
             this.getFirestoreListSize(); /* Get list size from the server async call */
-           }
+           
         }else
         this._observerinit.configFirestore = "ready";
               
@@ -111,9 +117,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if(myglobal.firestorehandle === 0)
           {  
             myglobal.firestorehandle = firebase.firestore();
-          }        
-        if( (this.firestorecollectionhndl === "null") || (typeof this._firestorefirestorecollectionhndlcollection === "undefined")  )
-             this.firestorecollectionhndl = myglobal.firestorehandle.collection(collection);
+          }
+
+       this.firestorecollectionhndl = myglobal.firestorehandle.collection(collection);
+       console.log("Got connection handle for collection"+collection+ "Handle"+ this.firestorecollectionhndl);
       }
       
     /*
@@ -122,10 +129,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      */
       getFirestoreListSize( )
        {
-             this.firestorecollectionhndl.orderBy(this.firestoreconfig.orderby,"desc").limit(1)
+        myglobal.firestorehandle.collection(this.firestoreconfig.collection).orderBy(this.firestoreconfig.orderby,"desc").limit(1)
              .onSnapshot(function(querySnapshot) {
                  querySnapshot.forEach(function(doc) {
-                   console.log(" data: "+ doc.get("sequence"));
+                   console.log(" List Size: " + doc.get("sequence"));
                    this.firestorelistsize = doc.get("sequence");
                  }.bind(this));
              }.bind(this));

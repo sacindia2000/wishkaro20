@@ -28,24 +28,67 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="my-overlay.html">
 
 
-<dom-module id="my-view2">
+<dom-module id="my-view3">
   <template>
   <style include= "sharedstyles" >
   :host
    {
-    top:92px;
+    top:44px;
+    transition: opacity 300ms ease-in-out 1s;
    }
+ /** Animation **/
+@-webkit-keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@-moz-keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+.fade-in {
+ opacity:0;  /* make things invisible upon start */
+ -webkit-animation:fadeIn ease-in 1;  /* call our keyframe named fadeIn, use animattion ease-in and repeat it only 1 time */
+ -moz-animation:fadeIn ease-in 1;
+ animation:fadeIn ease-in 1;
+ 
+ -webkit-animation-fill-mode:forwards;  /* this makes sure that after animation is done we remain at the last keyframe value (opacity: 1)*/
+ -moz-animation-fill-mode:forwards;
+ animation-fill-mode:forwards;
+ 
+ -webkit-animation-duration:.5s;
+ -moz-animation-duration:.5s;
+ animation-duration:.5s;
+}
+ 
+.fade-in.one {
+-webkit-animation-delay: 0.2s;
+-moz-animation-delay: 0.2s;
+animation-delay: 0.2s;
+}
+/** Animation end **/  
 </style> 
 
-<my-firestoreinit firestoreconfig = "{{dbconfig}}" 
-firestorelistsize = "{{listsize}}" 
-firestorecollectionhndl = "{{dbhandle}}">
+<my-firestoreinit firestoreconfig = "{{dbconfig}}" firestorelistsize = "{{listsize}}" firestorecollectionhndl = "{{dbhandle}}">
 </my-firestoreinit>
 
 <my-firestorequery firestorereadconfig = "{{dbreadconfig}}"
  firestorefetchdata = "{{reqdata}}"
  firestoredataobject = "{{dataobject}}"           
 ></my-firestorequery> 
+
+<my-overlay id="backdrop" with-backdrop  
+  style = " width:auto; height:auto;  padding: 0px 0px 0px 0px;">
+  <div class ="lightboxcontainer ">
+    <div class = "lightboxappheader">
+    <paper-icon-button icon="arrow-back"
+    style="color: white; left:16px; top:16px; "
+    on-click = "backkeyhandler">
+   </paper-icon-button>
+   <paper-icon-button class = "lightboxsocialpos" icon="social:share"  style="color: white; top:16px;"
+    on-click = "sharekeyhandler">
+  </paper-icon-button>
+   </div>
+  <iron-image class = "fade-in one"  style = "position:fixed; top: 100px;margin-left:8px;  
+  width:calc(100% - 16px); height:80%; z-index:110;" sizing="contain"
+  src= "{{selectedimageurl}}" error="{{imageloaderror}}"></iron-image>
+ </div>  
+</my-overlay>
 
     
 <div class = "container">
@@ -76,20 +119,14 @@ firestorecollectionhndl = "{{dbhandle}}">
      * @customElement
      * @polymer
      */
-    class MyView2 extends Polymer.GestureEventListeners (Polymer.Element) {
-      static get is() { return 'my-view2'; }
+    class MyView3 extends Polymer.GestureEventListeners (Polymer.Element) {
+      static get is() { return 'my-view3'; }
       static get properties() {
         return {
-           /** Read properties like collection etc set by app **/
+
           viewconfig:
           {
-            type:Object,
-            value:
-            {
-              collection:'null',
-              sequnce:'null',
-              limit:0
-            }
+              type:Object
           },
           /** Check for DB to be ready before accessing **/ 
           dbready:
@@ -102,24 +139,14 @@ firestorecollectionhndl = "{{dbhandle}}">
           dbconfig:
           {
             type:Object,
-            value:
-            {
-              collection:'null',
-              orderby:'null'
-            },
+            value:"null",
             notify:true
           },
           /** Set Database read configuration **/
           dbreadconfig:
           {
             type:Object,
-            value:
-            {
-             limit:0,
-             orderby:'null',
-             index:'null',
-             dbhandle:{}
-             },
+            value:"null",
             notify:true
           },
           /** Request for data by toggling **/    
@@ -151,8 +178,7 @@ firestorecollectionhndl = "{{dbhandle}}">
           },
           /** Object array storing the image objects **/
           imagearray: {
-            type: Array,
-            value: []
+            type: Array
           },
           /** Observer to be called if image fails to load **/
           imageloaderror:{
@@ -166,6 +192,7 @@ firestorecollectionhndl = "{{dbhandle}}">
             type: Object,
             observer: "ImageSelected",
             notify:true
+        
           },
           /** Inform right category for loading to main app **/
           categoryselected:
@@ -183,6 +210,11 @@ firestorecollectionhndl = "{{dbhandle}}">
           {
             type:Object
           },
+         /** Image URL to be passed onto overlay **/ 
+          selectedimageurl:
+          {
+            type: String
+          },
          /** Hide the spinner at complete load etc **/ 
           _hidespinner:
           {
@@ -197,16 +229,37 @@ firestorecollectionhndl = "{{dbhandle}}">
          /** Store states of toast to take action */ 
           toaststate:
           {
+            type:Object
+          },
+          /** URI to hold storage location **/
+          androiduri:
+          {
+            type: String,
+            valye: null
+
+          },
+          waitonread:
+          {
             type:Object,
-            value:
-            {
-              NEW_CONTENT: 'newcontent',
-              MOVE_TAB: 'movetab'
-            }
-          }
+           // observer:"startreading"
+          } 
                }
-      } /** Properties complete **/
-      
+      }
+      static get observers() {
+        return [
+            'startreading(waitonread.collection)'
+        ]
+      }
+      startreading()
+      {
+        console.log("Reading is called" + this.waitonread.collection);
+       if(this.waitonread.collection === "")
+       return;
+       
+         console.log("Collection is not empty");
+         this.statemachine.state = 'idle';
+         this.setaction(this.statemachine.action.FIREBASEINIT);          
+      }
 
      /**
      * constructor
@@ -215,15 +268,48 @@ firestorecollectionhndl = "{{dbhandle}}">
       constructor()
       {
         super();
-        this.stateMachineConstructor();
-        /** An exception for poor design of iron-list **/
-        this._observerinit = 
+        /*  View config parameters */
+        this.viewconfig = 
+        {
+          LIST_LIMIT : 30,
+          COLLECTION_NAME : 'goodmorning',
+          SEQUENCE_PARAMETER : 'sequence' 
+        }
+        
+        /** Polymer invokes observers once even before actual data is updated
+            Add each observer here to make sure proper status is set 
+        **/  
+          this._observerinit = 
           {
+            dbready: "none",
+            dataobject : "none",
+            listsize : "none",
+            imageloaderror : "none",
             imageselected: 'none'
           };
+        this.imagearray = [];
+        this.stateMachineConstructor();
+        this.toaststate =
+        {
+          NEW_CONTENT: 'newcontent',
+          MOVE_TAB: 'movetab',
+        };
+           this.dbconfig =
+           {
+            collection : 'null',
+            orderby : 'null'
+           };
+          
+           this.waitonread = 
+         {
+           state:false,
+           collection:"Sachin"
+         }
+         
       } /* End of constructor **/
-
-      /*
+     
+     
+     /*
      * 
      * Ready polymer life cycle element
      */
@@ -236,7 +322,6 @@ firestorecollectionhndl = "{{dbhandle}}">
         Polymer.Gestures.setTouchAction(this,"auto");
 
       }
-
      /*
      * 
      * Init the statemachine and all other variables 
@@ -254,7 +339,9 @@ firestorecollectionhndl = "{{dbhandle}}">
              TRACK:'trackevent',
              HANDLE_DATA : 'handledata',
              LIST_UPDATED : 'newdataind',
-             ITEM_SELECTED : 'categorySelected',
+             ITEM_SELECTED : 'urlSelected',
+             SHARE_KEY: "shareClicked",
+             BACK_KEY : "backClicked",
              TOAST_CLICKED: "toastClicked"
            },
            list:
@@ -267,31 +354,39 @@ firestorecollectionhndl = "{{dbhandle}}">
            transitions:
            {
              idle:{
-                   initialize : function (parent) /** Asd to Init function **/
+                   initialize : function (traget)
                    {
-                   this.target = parent;
+                   this.target = traget;
                    
                    },
                    firebaseinit: function (data)
                    {
-                    this.target.flushViewData();    
                     /** Update Firestore Config to get size **/
-                    this.target.initFirestore(this.target.viewconfig.collection); 
-                    console.log("Firebase Init complete");
+                    this.target.flushViewData();
+                    this.target.initFirestore(this.target.waitonread.collection);
+                    console.log("Firebase Init complete with collection"+ this.target.waitonread.collection);
+                    
                   } ,
-                  firestoreinitsuccess : function (size,handle)
+                  firestoreinitsuccess : function (data,handle)
                   {
-                    console.log("FirestoreInit success List size = " + size );
+                    console.log("FirestoreInit success List size = " + data );
+                               
+                    this.target.statemachine.list.size = data;
                     /** Total list size **/
-                    this.target.statemachine.list.size = size;
-                    /** Set read config,handle,number of objects to read ,order **/
-                    this.target.setReadConfig(this.target.dbhandle,this.target.viewconfig.limit,
-                                  this.target.viewconfig.sequence);
+                    this.target.dbreadconfig =
+                       {
+                         limit: this.target.viewconfig.LIST_LIMIT,
+                         index: 0,
+                         orderby:this.target.viewconfig.SEQUENCE_PARAMETER
+                       };
                      /** Change state **/
                       this.target.statemachine.state = 'processing';
                      /** Request for first set of data **/       
-                    this.target.readData(this.target.statemachine.list.size);
-               
+                     this.target.dbreadconfig.dbhandle = this.target.dbhandle;
+                     /** Configure as per current count **/
+                     this.target.dbreadconfig.index =  this.target.statemachine.list.size;
+                     /** Toggele each time to get data **/
+                     this.target.reqdata = !this.target.reqdata;
                  },
                  firestoreiniterror : function (data)
                  {
@@ -310,36 +405,54 @@ firestorecollectionhndl = "{{dbhandle}}">
                    {
                      this.target = traget;
                   }, 
-                  newdataind : function (size)
+                  newdataind : function (data)
                   {
                    console.log("New data is available");
-                   this.target.displayToast("Updating NEW category"," ",3000);
-                   /** Change state and update entire table of content **/
-                   this.target.flushViewData();    
-                   this.target.statemachine.state = "idle";
-                   this.target.setaction(this.target.statemachine.action.FIREASTOREINIT_SUCCESS,size);          
+                   this.target.displayToast("New data ready","ok",0);
+                   this.target.statemachine.list.newsize = data;
                   },
                   trackevent : function ( evt)
                   {
                     console.log("Tracking started");
-                  
                    /** Check whether page need to be pre fetched **/
                     if(( this.target.$.itemlist.lastVisibleIndex >= (this.target.imagearray.length-5) )
                           && (this.target.statemachine.list.size > this.target.statemachine.list.viewsize) )
                             {
-                             
+                             this.target.dbreadconfig.index = this.target.statemachine.list.size - this.target.statemachine.list.viewsize;
                               /** Change state **/
-                               this.target.statemachine.state = 'processing';
-                               this.target.readData(this.target.statemachine.list.size - this.target.statemachine.list.viewsize);
+                              this.target.statemachine.state = 'processing';
+                              /** Toggele each time to get data **/
+                               this.target.reqdata = !this.target.reqdata;
                              }
                             
                   },
-                  categorySelected: function(categoryobj)
+                  urlSelected : function(url)
                   {
-                     console.log("category selected");
-                     this.target.categoryselected = categoryobj;
-                     
-
+                    console.log("Image item clciked READY");
+                    this.target.selectedimageurl = url.webp;
+                    /** Change state **/
+                    this.target.statemachine.state = 'lightbox';
+                    this.target.openoverlay();
+                    /** Start preparing for jpeg image fetch **/
+                    var t0 = performance.now();
+                    var request = new Request(url.jpg);
+                    var Abort = new AbortController();
+                    var Signal = Abort.signal;
+                    fetch(url.jpg,
+                    ).then((response) => {
+                         response.arrayBuffer().then((buffer) => {
+                         var byteArray = new Uint8Array(buffer);
+                         var arr = new Uint8Array(byteArray.length);
+                         for(var i = 0; i < byteArray.length; i++) {
+                                 arr[i] = byteArray[i];
+                          }
+                     this.target.androiduri = window.Android.saveAsJPEG("test.jpg",arr);
+                     console.log("RETURN RESULT" + this.androiduri);
+                   var t1 = performance.now();
+             console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
+                         });
+  
+                  });
                   },
                   toastClicked : function()
                   {
@@ -359,32 +472,80 @@ firestorecollectionhndl = "{{dbhandle}}">
                    handledata: function(dataobj)
                    {
                      console.log("Processing Data");
-                     this.target.updateView(dataobj.get("webp"),dataobj.get("page"),
-                                            dataobj.get("collection"),dataobj.get("title"));
-                    this.target.updateListStats();
-                    },
-                    newdataind : function (size)
-                     {
-                      console.log("New data is available");
-                      this.target.statemachine.newsize = size;
-                      this.target.displayToast("Updating NEW category"," ",3000);
-                      /** Change state and update entire table of content **/
-                      this.target.statemachine.state = "idle";
-                      this.target.setaction(this.target.statemachine.action.FIREBASEINIT);          
+                     /** Push the object to view **/ 
+                     var imageobject = new Object();
+                     imageobject.webp = dataobj.get("webp");
+                     imageobject.name = dataobj.get("name");
+                     this.target.push('imagearray',imageobject);
+                     /** Append count of objects within the view **/
+                     this.target.statemachine.list.viewsize++;
+                     this.target.statemachine.list.pagelen++;
+                     /** Check for any state changes **/
+                     if(this.target.statemachine.list.pagelen === this.target.dbreadconfig.limit)
+                       {
+                        console.log("Completed page read");
+                        this.target.statemachine.list.pagelen = 0;
+                        /** Change state **/
+                        this.target.statemachine.state = 'ready';
+                        }
+                      if(this.target.statemachine.list.viewsize === this.target.statemachine.list.size)
+                        {
+                          console.log("Complete list is through");
+                           this.target.statemachine.list.pagelen = 0;
+                           /** Change state **/
+                           this.target.statemachine.state = 'ready';
+                           /** No need to fetch data so close spinner **/
+                            this.target._hidespinner = true;
 
-                     },
-                  categorySelected: function(categoryobj)
-                     {
-                       console.log("category selected");
-                       this.target.categoryselected = categoryobj;
-
-                     },
+                           }
+                           
+                         },
+                         newdataind : function (data)
+                         {
+                           console.log("New data is available");
+                           this.target.statemachine.newsize = data;
+                           this.target.displayToast("New data processing","ok",0);
+                         },
                          toastClicked : function()
                          {
                            console.log("Toast Clicked");
                          }
-                      }
+                      },
+                      lightbox:
+                      {
+                        initialize : function (traget)
+                          {
+                             this.target = traget;
+                          },
+                          trackevent : function ( evt)
+                         {
+                            console.log("Ignore tracking events for now ");
+                         
+                         },
+                         shareClicked: function()
+                         {
+                           console.log("Share key pressd");
+                           window.Android.shareURI(this.target.androiduri);
+                           
+                         },
+                         backClicked: function ()
+                         {
+                             
+                          console.log("Back key pressed");
+                          /** Change state **/
+                          this.target.statemachine.state = 'ready';
+                          this.target.closeoverlay();
 
+                         } ,
+                         newdataind : function (data)
+                         {
+                           console.log("New data is available");
+                           this.target.statemachine.newsize = data;
+                           this.target.displayToast("New data processing","ok",0);
+
+                         }  
+
+                      }  /* End of lightbox state */  
            } /* End of all states **/
       } /* End of state machine Object */    
 
@@ -396,6 +557,7 @@ firestorecollectionhndl = "{{dbhandle}}">
         this.statemachine.transitions['idle']['initialize'](this);
         this.statemachine.transitions['ready']['initialize'](this);
         this.statemachine.transitions['processing']['initialize'](this);
+        this.statemachine.transitions['lightbox']['initialize'](this);
       }
 
        setaction(action,data)
@@ -406,7 +568,7 @@ firestorecollectionhndl = "{{dbhandle}}">
        initFirestore(collection)
        {
         this.dbconfig.collection = collection; 
-        this.dbconfig.orderby = this.viewconfig.sequence;
+        this.dbconfig.orderby = this.viewconfig.SEQUENCE_PARAMETER;
         this.notifyPath('dbconfig.collection');
                 
        }
@@ -418,66 +580,18 @@ firestorecollectionhndl = "{{dbhandle}}">
         this.statemachine.list.size = 0;
         this.statemachine.list.newsize = 0;
         Polymer.flush();
-        }
-
-        setReadConfig(handle,limit,sequence)
-        {
-          this.dbreadconfig.limit = limit; 
-          this.dbreadconfig.orderby = sequence;             
-          this.dbreadconfig.dbhandle = handle;             
-        }
-
-        readData(index)
-        {
-          this.dbreadconfig.index = index;
-          /** Toggele each time to get data **/
-          this.reqdata = !this.reqdata;
-        }
-
-        updateView(webp,page,collection,title)
-        {
-           /** Push the object to view **/ 
-           var imageobject = new Object();
-               imageobject.webp = webp;
-               imageobject.page = page;
-               imageobject.collection = collection;
-               imageobject.title = title;
-               this.push('imagearray',imageobject);
-        }
-
-        updateListStats()
-        {
-          /** Append count of objects within the view **/
-          this.statemachine.list.viewsize++;
-          /** Size of items in the page being downloaded **/
-          this.statemachine.list.pagelen++;
-          /** Check for any state changes **/
-          if(this.statemachine.list.pagelen === this.dbreadconfig.limit)
-              {
-                console.log("Completed page read");
-                this.statemachine.list.pagelen = 0;
-                /** Change state **/
-                this.statemachine.state = 'ready';
-              }
-              if(this.statemachine.list.viewsize === this.statemachine.list.size)
-                  {
-                      console.log("Complete list is through");
-                      this.statemachine.list.pagelen = 0;
-                      /** Change state **/
-                      this.statemachine.state = 'ready';
-                      /** No need to fetch data so close spinner **/
-                      this._hidespinner = true;
-
-                      }
-
-        }
+  
+       }
+     
 
        ImageLoadError()
       {
-        
-        console.log("Image Load Error");
-      //  this.imageload = false;        
-       
+        if(this._observerinit.imageloaderror === "ready")
+        {
+        console.log("Image Loaded");
+        this.imageload = false;        
+        }else
+        this._observerinit.imageloaderror = "ready";
       }
 
       ImageSelected()
@@ -492,6 +606,8 @@ firestorecollectionhndl = "{{dbhandle}}">
           console.log("Timed Out Previous item"); 
           console.log(this._previousselection);
           this.setaction(this.statemachine.action.ITEM_SELECTED,this._previousselection);          
+        
+         // this.selecteditem = this._previousselection;         
                  }.bind(this),50);
          return;        
          }else
@@ -502,42 +618,52 @@ firestorecollectionhndl = "{{dbhandle}}">
           this.setaction(this.statemachine.action.ITEM_SELECTED,this.selecteditem);          
          }
        }else
-       this._observerinit.imageselected = "ready";
+        this._observerinit.imageselected = "ready"
 
       }
       /**
      * @databaseReady
-     * Observer invoked to inform completion of Firebase Init 
+     * Observer invoked to inform completion of FireStore Init 
      */
       databaseReady()
       {
-          if(this.dbready) 
-          this.setaction(this.statemachine.action.FIREBASEINIT);          
+        if(this._observerinit.dbready === "ready")
+        {
+        //  this.setaction(this.statemachine.action.FIREBASEINIT);          
+      }else
+      this._observerinit.dbready = "ready";
       }
+
+
 
     DatabaseSize()
      {
-      if(this.listsize > 0)
+      if(this._observerinit.listsize === "ready")
         {
            console.log("List Size " + this.listsize);
            if( this.statemachine.state === 'idle')
            this.setaction(this.statemachine.action.FIREASTOREINIT_SUCCESS,this.listsize);
            else
            this.setaction(this.statemachine.action.LIST_UPDATED,this.listsize);
-        }
+        }else
+        this._observerinit.listsize = "ready";
     }
 
-
+      requestData()
+      {
+        this.reqdata = !this.reqdata;
+      }
 
     
 
       processData()
       {
-        if(this.dataobject != "null")
+        if(this._observerinit.dataobject === "ready")
         {
           console.log("Process the received data" + this.dataobject.get("sequence"));
           this.setaction(this.statemachine.action.HANDLE_DATA,this.dataobject);          
-        }
+        }else
+        this._observerinit.dataobject = "ready";
       }
 
           
@@ -562,13 +688,49 @@ firestorecollectionhndl = "{{dbhandle}}">
      {
        console.log("Display toast clicked");
        this.$.papertoast.close();
+       this.statemachine.list.size = this.statemachine.list.newsize;
+       this.statemachine.list.viewsize = 0;
+       this.statemachine.list.newsize =0;
+       this.imagearray.length =0;
+       this.dbreadconfig.index = this.statemachine.list.size;
+       /** Change state **/
+       this.statemachine.state = 'processing';
+       /** Toggele each time to get data **/
+       this.reqdata = !this.reqdata;
+     }
+    
+    openoverlay()
+      {
+        this.$.backdrop.open();
+        document.body.style.overflow = 'hidden';
+
+      }
+     
+      closeoverlay()
+      {
+        this.$.backdrop.close();
+        document.body.style.overflow = '';
+
+      }
+     
+     backkeyhandler()
+     {
+      this.setaction(this.statemachine.action.BACK_KEY);
+
+     }
+
+     sharekeyhandler ()
+     {
+  
+      this.setaction(this.statemachine.action.SHARE_KEY);
        
      }
+
 
      }   /** End of Component **/
     
     
 
-    window.customElements.define(MyView2.is, MyView2);
+    window.customElements.define(MyView3.is, MyView3);
   </script>
 </dom-module>
