@@ -5,14 +5,29 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-route/app-route.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
+
+<link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
 <link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
-<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+
 <link rel="import" href="../../bower_components/paper-tabs/paper-tab.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/paper-badge/paper-badge.html">
+
+<link rel="import" href="../../bower_components/polymer/lib/mixins/mutable-data.html">
+
+
 <link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
-<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
+<link rel="import"  href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
 
 <!-- Non polymer includes -->
 <link rel="import" href="sharedstyles.html">
@@ -20,53 +35,117 @@
 <link rel="import" href="my-view1.html">
 <link rel="import" href="my-view2.html">
 <link rel="import" href="my-view3.html">
+<link rel="import" href="my-appdrawerlayout.html">
+<link rel="import" href="my-dbstats.html">
 
+<link href="https://fonts.googleapis.com/css?family=Roboto+Slab" rel="stylesheet">
 <!-- Non polymer includes -->
 
 <dom-module id="wishkaro20-app">
   <template>
     <style include = "sharedstyles">
       :host{
+        display: block;
         top:0px;
+          @apply(--layout-fullbleed); /* height: 100vh; margin: 0 */
+          @apply(--layout-vertical); /* display: flex; flex-direction: column; */
+        
       }
+
+         iron-list {
+          @apply(--layout-flex-auto); /* flex: 1 1 auto; */
+        }
+
       [hidden] {
           display: none !important;
-        }   
+        } 
+        .left-bar-item {
+        width: 40px;
+      }
+        .menu-btn {
+          display: block;
+        }
+        .logo {
+        text-align: center;
+      }
+      app-drawer {
+        z-index: 3;
+      }
+     
+
     </style>
     
     <app-location route="{{route}}"></app-location>
     <app-route route="{{route}}" pattern="/:view" data="{{data}}"></app-route>
 
-    <app-header reveals slot="header">
-
-      <app-toolbar style="height: 48px;">
-        <paper-icon-button hidden$= "{{hidebackarrow}}" icon="arrow-back" on-click = "backarrowtapped"> </paper-icon-button>
-        <div main-title style = "margin-left: 16px;margin-top:16px; margin-bottom:14px;" >{{header}}</div>
+     <app-header style = "z-index:3"role="navigation" id="header" effects="waterfall" condenses reveals>
+      <app-toolbar>
+        <div class="left-bar-item">
+          <paper-icon-button
+              class="menu-btn"
+              icon="menu"
+              on-click="_toggleDrawer"
+              aria-label="Categories">
+          </paper-icon-button>
+        </div>
+        <div class="logo" main-title> TRENDING TODAY</div>
       </app-toolbar>
-      <template is="dom-if" if="{{!hidetabs}}">
-      <paper-tabs  id = "mytabs" selected="{{data.view}}" attr-for-selected="name" >
-          <paper-tab name = "view1" > POPULAR </paper-tab>
-          <paper-tab name = "view2" > CATEGORIES </paper-tab>
-      </paper-tabs> 
-    </template>
-    </app-header>
-    <myfirebase-init config="{{_config}}" status = "{{firebaseinitstatus}}"></myfirebase-init>
-    <iron-pages      selected="{{data.view}}"
-    attr-for-selected="name"
-    fallback-selection="view1">
-      <my-view1 name="view1" dbready = "{{firebasedbready}}" overlayset = "{{keyhandler}}"></my-view1>
-      <my-view2 name="view2" viewconfig = "{{view2config}}" dbready = "{{firebasedbready}}" categoryselected = "{{categoryselect}}"></my-view2>
-      <my-view3 name="view3" dbready = "{{firebasedbready}}" waitonread = "{{startreading}}"></my-view3> 
-    </iron-pages>
+      </app-header>
+      
+      <app-drawer slot="drawer" opened="{{drawerOpened}}" swipe-open tabindex="0">
+        <iron-image sizing="cover"style = "width:256px;height:144px;"
+                    src= "https://firebasestorage.googleapis.com/v0/b/wishkaro-94738.appspot.com/o/resources%2Fwishkaroiconjpg1.jpg?alt=media&token=f83a81f3-1e43-4826-8ed8-378a1053f1f7" ></iron-image>
+                    
+                    <my-appdrawerlayout list = "{{categories}}" categoryposition = "{{categoryindex}}"
+                    categoryselected = "{{selectiontoggle}}" updatelistview = "{{uiviewupdatetoggle}}"></my-appdrawerlayout>
+                    
+                    <div class = "drawer-list">  
+                    <iron-selector selected="{{drawerselection}}">
+            <dom-repeat items="{{items}}">
+                <template>
+                    <div class = "drawer-item">
+                        <paper-icon-button class = "drawer-icons"  icon="accessibility"></paper-icon-button>
+                        <div class = "drawericon-text">Devotion</div>
+                        <paper-ripple></paper-ripple>
+                      </div>  
+                </template>
+              </dom-repeat>
+            </iron-selector>           
+        </div>
+
+     
+     </app-drawer>
+     
     
-    </template>
+     <myfirebase-init config="{{_config}}" status = "{{firebaseinitstatus}}"></myfirebase-init>
+    
+    <my-dbstats dbready = "{{firebasedbready}}" categoryarrayuisnapshot = "{{categoryarray}}"
+               updateui = "{{listupdated}}"  ></my-dbstats>
+<!--
+               <dom-repeat items="[[viewlist]]" as="item" mutable-data>
+                <template>
+                <my-view3 name="view3" dbready = "{{firebasedbready}}" 
+                waitonread = "{{item}}"></my-view3> 
+                </template>
+              </dom-repeat>           
+ -->   
+               <iron-pages      selected="{{selectpage}}"
+    fallback-selection="view1">
+    <my-view1 name="view1" dbready = "{{firebasedbready}}" overlayset = "{{keyhandler}}"></my-view1>
+    <my-view3 name="view3" dbready = "{{firebasedbready}}" waitonread = "{{startreading}}"></my-view3> 
+    <!-- Register for changes across all categories -->
+    
+  </iron-pages>
+   
+    
+  </template>
 
   <script>
     /**
      * @customElement
      * @polymer
      */
-    class Wishkaro20App extends Polymer.GestureEventListeners (Polymer.Element) {
+    class Wishkaro20App extends Polymer.MutableData (Polymer.Element) {
       static get is() { return 'wishkaro20-app'; }
       static get properties() {
         return {
@@ -74,13 +153,7 @@
             type: String,
             value: 'wishkaro20-app'
           },
- /** Add var for every observer to track first init **/  
-          _observerinit:
-          {
-              type:Object,
-              value:"`null"
-          },
-         /* Pass the Firebase Configuration Parameters */ 
+          /* Pass the Firebase Configuration Parameters */ 
           _config: 
           {
             type:Object,
@@ -100,16 +173,20 @@
             notify:true
           },
           /** For test only **/
-          tabselect:
+          categoryarray:
           {
-            type: String,
-            value:"0"
+            type: Array,
+            value: function () {return [];}
           },
-          categoryselect:
+          categoryviewsnapshot:
           {
-            type :Object,
-            value: 'null',
-            observer: 'categorySelected',
+            type:Array,
+            value: function () {return [];}
+          },
+          viewcountarray:
+          {
+            type: Array,
+            value: function () {return [];}
           },
           data: {
             type: Object,
@@ -125,16 +202,10 @@
             value: "Wish Karo"
           },
         /** Hide back arrow in main screen **/
-        hidebackarrow:
+        listupdated:
         {
           type:Boolean,
-          value:true
-        },
-        /** Hide back arrow in main screen **/
-        hidetabs:
-        {
-          type:Boolean,
-          value:false
+          observer: "categoryListUpdated"
         },
         /** overlay set **/
         keyhandler:
@@ -143,147 +214,74 @@
           notify: true,
           observer:"_keyHandlerUpdated"
         },
-        /** View object **/
-        _viewlayout:
-        {
-          type:Object
-        } ,
-        /** Page Layout **/
-        _pagelayout:
-        {
-          type:Object
-        },
-        /** View configurations **/
-        view2config:
-        {
-          type:Object,
-          value: 
-          {
-            collection:"category",
-            sequence : "sequence",
-            limit : 30
-          }
-        },
         /** testing only **/
         startreading:
         {
           type:Object,
           notify:true
+        },
+        drawerOpened:
+        {
+          type:Boolean,
+          value:false
+
+        },
+        drawerselection:
+        {
+          type:Number,
+          observer: "drawercategorySelected"
+        },
+
+        categories:
+        {
+          type: Array,
+          value:function () {return [];},
+          notify:true
+        },
+        viewlist:
+        {
+          type: Array,
+          value:function () {return [];},
+          notify:true
+        },
+        categoryindex:
+        {
+          type:Number,
+          value:-1
+        },
+        selectiontoggle:
+        {
+          type:Boolean,
+          observer: "getCategoryIndex"
+        },
+        selectpage:
+        {
+          type:Number,
+          value:0
+        },
+        uiviewupdatetoggle:
+        {
+          type:Boolean
         }
 
         }
       } /** Properties */
 
-      _keyHandlerUpdated()
-      {
-        console.log("Key handler updated" + this.keyhandler);
-        if(this.keyhandler === "Ignored" )
-        {
-          if( (this.data.view != "view2") && (this.data.view != "view1") )
-          {
-            console.log("Move to view 2");
-            this.set("data.view","view2");
-            }
-          else if (this.data.view === "view2")
-          {
-            console.log("Move to view 1");
-            this.set("data.view","view1");}
-          else
-          {
-            console.log("Exit the app");
-            window.Android.exitApp();
-          }
-
-
-        }
-        
-      }
-      
-      categorySelected ()
-      {
-        if(this._observerinit.categoryselect === "ready")
-        {
-          console.log("category selected " + this.categoryselect.title);
-          console.log("category collection " + this.categoryselect.collection);
-          this.header = this.categoryselect.title;
-          this.startreading.collection = this.categoryselect.collection ;
-          this.notifyPath('startreading.collection');
-        //  this.set("startreading",[]);
-          this.set("data.view","view3");
-          return;
-        //  this.hidebackarrow = false;
-        //  this.hidetabs = true;
-          switch(this.categoryselect.name)
-          {
-            case 'morning':
-                  console.log ("Good Morning");
-          //        this.header = "Good Morning";
-                console.log(this._viewlayout[this.categoryselect.name]["view"]);
-                  this.set("data.view",this._viewlayout[this.categoryselect.name]["view"]);
-                  break;
-            case 'night':
-                  console.log ("Good Night");
-            //      this.header = "Good Night";
-            this.set("data.view",this._viewlayout[this.categoryselect.name]["view"]);
-                  break;
-            case 'birthday':
-                  console.log ("Happy Birthday");
-              //    this.header = "Happy Birthday";
-              this.set("data.view",this._viewlayout[this.categoryselect.name]["view"]);
-                  break;
-            case 'inspiration':
-                 console.log ("Inspiration");
-                // this.header = "Motivational Quotes";
-                this.set("data.view",this._viewlayout[this.categoryselect.name]["view"]);
-                  break;                   
-          }
-         // this.set("data.view","view3");
-        }else
-        this._observerinit.categoryselect = "ready";
-      }
-      /**
+   /**
      * @construct
      * polymer
      * When component lifecycle gets called, set the init 
      */
-      constructor ()
+     constructor ()
       {
         Polymer.setPassiveTouchGestures(true);
         super();
-         this._observerinit = 
-           {
-            firaebaseInitStatus : "none",
-            categoryselect : 'none',
-            _pagechanged : 'none'
-          };
-          
-       
-         this.startreading = 
+       this.startreading = 
          {
            state:false,
            collection:""
          };
-           
-         this._viewlayout = {
-            "Popular":{"view":"view1","header":"WISH KARO","tabs":true,"backarrow":false},
-            "Category":{"view":"view2","header":"WISH KARO","view":"view2","tabs":true,"backarrow":false},
-            "morning":{"view":"view3","header":"Good Morning","tabs":false,"backarrow":true},
-            "night":{"view":"view3","header":"Good Night","tabs":false,"backarrow":true},
-            "inspiration":{"view":"view3","header":"Inspirational Quotes","tabs":false,"backarrow":true},
-            "birthday":{"view":"view3","header":"Happy Birthday","tabs":false,"backarrow":true}
-                  };
-         this._pagelayout =
-               { 
-                   "view1":"Popular",
-                   "view2":"Category",
-                    "view3":"morning",
-                    "view4":"night",
-                    "view5":"inspiration",
-                    "view6":"birthday"
-                    
-               };         
-
-      
+     
       }
       /**
      * @Ready
@@ -303,57 +301,186 @@
                           messagingSenderId: "710301933949"
                          };
           }
-      /**
+     /**
      * @firaebaseInitStatus
      * polymer
-     * Observer to check the init status  
+     * Observer to check the init status. And update every object waiting for db read  
      */
-      firaebaseInitStatus ( )
+     firaebaseInitStatus ( )
       {
          
-         if(this._observerinit.firaebaseInitStatus === "ready")
+         if(this.firebaseinitstatus ===  "InitSuccess")
          {
              console.log("Firebase Init" + this.firebaseinitstatus);
              this.firebasedbready = true;
-         }else
-         this._observerinit.firaebaseInitStatus = "ready";
-      }
-
-      _pageChanged()
-      {
-        if(this._observerinit._pagechanged === "ready")
-         {
-           
-         //  var view = this._pagelayout[this.data.view];
-         //  console.log("Page Changed to " + view);
-         if(this.data.view === 'view3')
-         {
-           this.hidetabs =true;
-           this.hidebackarrow = false;
          }
-         
+      } 
 
-         }
-         this._observerinit._pagechanged = 'ready';      
-
-      }
-
-      _backkeyPressed()
+    /**
+     * @categoryListUpdated
+     * polymer
+     * Observer indicating change in category list  or size or position etc
+     */
+    categoryListUpdated()
       {
-        console.log("Back key pressed by the user check wher yu are and decide");
-        this.keyhandler = "Key Press";
+         console.log("Category updated ");
+         this.updateViewSnapshot();
+         this.updateViewList(this.viewlist,this.categoryviewsnapshot);
+         this.updateDrawerUI();
+       }
+
+    /**
+     * @updateViewSnapshot
+     * polymer
+     * Copy the changed array to local array and reset the original array
+     */
+
+      updateViewSnapshot()
+      {
+        this.categoryviewsnapshot =  this.categoryarray.map(function(category){
+           var temp = new Object();
+           temp.collection =category.collection;
+           temp.listsize =category.listsize;
+           temp.title = category.title;
+           temp.icon = category.icon;
+           return temp;           
+        })
+
+      }
+   
+      /**
+     * @updateViewList
+     * polymer
+     * Updte viewlist as per change in backend collection
+     */
+     updateViewList(viewlist,categorysnapshot)
+      {
+        /** Each time there is a chnage in the list loop through and add **/
+        categorysnapshot.forEach(function(item){
+             console.log("For each ***" + item.collection);
+             var tempcollection =  viewlist.find(function(collection){
+              return (collection === item.collection)
+            });
+
+         if(typeof tempcollection === 'undefined')
+            {         
+              var temp = new Object();
+              temp.status= false;
+              temp.collection = item.collection;
+              viewlist.push(temp);
+            }             
+         })
+
+       /** Purge the viewlist to remove any removed collection **/
+       viewlist.forEach(function(item,index){
+        var tempcollection =  categorysnapshot.find(function(category){
+              return (category.collection === item)
+            });
+            if(typeof tempcollection === 'undefined')
+            viewlist.splice(index,1);
+             })
+
+       this.notifyPath('viewlist');
+   
+      }
+   
+
+   getCategoryIndex()
+   {
+     console.log("Category selected toggle drawer" + this.categoryindex);
+     if(this.categoryindex === -1)
+     return;
+     this.startreading.collection = this.categoryviewsnapshot[this.categoryindex].collection;
+     this.notifyPath('startreading.collection');
+     this.updateViewedCount(this.categoryviewsnapshot[this.categoryindex].collection,
+                            this.categoryviewsnapshot[this.categoryindex].listsize);
+     this.drawerOpened = !this.drawerOpened;
+
+   }
+
+     updateViewedCount(collection,count)
+   {
+     var viewedcountobj;
+         viewedcountobj = this.getViewCountByCollection(collection);
+         viewedcountobj.viewedcount = count;
+      this.updateDrawerUI();
+
+   }
+
+      drawercategorySelected()
+      {
+        console.log("Drawer category Selected" + this.drawerselection);
+      }
+    
+      _toggleDrawer() {
+        this.drawerOpened = !this.drawerOpened;
+           }
+
+    
+     
+      getLastViewedCount(collection)
+      {
+        var viewcount = this.getViewCountByCollection(collection);
+            if(typeof viewcount != 'undefined')
+            {
+              console.log(" Collection = " + collection);
+              return viewcount.viewedcount;
+            }else
+            return 0;
       }
 
-      backarrowtapped()
+      createViewCountReference(collection)
       {
-         console.log("Back arrow tapped ");
-         this.hidebackarrow = true;
-         this.hidetabs = false;
-         this.header = "Wish Karo";
-         this.set("data.view","view2");
+        
+        var viewcountobj = this.viewcountarray.find(viewcount =>
+                            viewcount.collection === collection);
+        if(typeof viewcountobj === 'undefined')
+        {
+          var tempobj = new Object();
+          tempobj.collection = collection;
+          tempobj.viewedcount = -1; //this.categoryviewsnapshot[i].listsize;;
+          this.viewcountarray.push(tempobj);
+        }
+
       }
+
+      updateDrawerUI()
+      {
+        
+        this.categories.length =0;
+        for(var i=0; i< this.categoryviewsnapshot.length;i++ )
+        {
+         var category = new Object ();
+        category.name = this.categoryviewsnapshot[i].name;
+        category.icon = this.categoryviewsnapshot[i].icon;
+        category.title = this.categoryviewsnapshot[i].title;
+        var label;
+        label = this.categoryviewsnapshot[i].listsize
+                -this.getLastViewedCount(this.categoryviewsnapshot[i].collection);
+        if(label < 100)
+        category.label =label.toString();
+        else
+        category.label = "99+"; 
+
+        this.categories.push(category);
+
+        }
+        this.uiviewupdatetoggle = !this.uiviewupdatetoggle;
+
+      }
+
+
+
+        getViewCountByCollection(collection)
+        {
+           return  this.viewcountarray.find(viewcount =>
+                            viewcount.collection === collection);
+        }
+
+     
 
      }
+
     window.customElements.define(Wishkaro20App.is, Wishkaro20App);
   </script>
 </dom-module>

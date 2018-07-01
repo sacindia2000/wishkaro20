@@ -33,7 +33,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <style include= "sharedstyles" >
   :host
    {
-    top:92px;
     transition: opacity 300ms ease-in-out 1s;
    }
  /** Animation **/
@@ -64,9 +63,7 @@ animation-delay: 0.2s;
 /** Animation end **/  
 </style> 
 
-<my-firestoreinit firestoreconfig = "{{dbconfig}}" 
-firestorelistsize = "{{listsize}}"
-firestorecollectionhndl = "{{dbhandle}}"                              >
+<my-firestoreinit firestoreconfig = "{{dbconfig}}" firestorelistsize = "{{listsize}}"firestorecollectionhndl = "{{dbhandle}}">
 </my-firestoreinit>
 
 <my-firestorequery firestorereadconfig = "{{dbreadconfig}}"
@@ -143,7 +140,12 @@ firestorecollectionhndl = "{{dbhandle}}"                              >
           dbconfig:
           {
             type:Object,
-            value:"null",
+            value:
+            {
+              collection:'null',
+              orderby:'null',
+              limit:0
+            },
             notify:true
           },
           /** Set Database read configuration **/

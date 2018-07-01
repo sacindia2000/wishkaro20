@@ -3,7 +3,9 @@
   "main": "index.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.0",
-    "app-route": "PolymerElements/app-route#^2.1.1"
+    "app-route": "PolymerElements/app-route#^2.1.1",
+    "iron-swiper": "^2.1.1",
+    "paper-badge": "^2.1.0"
   },
   "devDependencies": {
     "web-component-tester": "Polymer/web-component-tester#^6.0.0",

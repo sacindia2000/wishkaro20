@@ -18,6 +18,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <template>
   </template>
   <script>
+    var readlistsize= 0;
+
     /**
      * @customElement
      * @polymer
@@ -29,6 +31,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           prop1: {
             type: String,
             value: 'firestore-init'
+          },
+          dataupdatetoggle:
+          {
+            type:Boolean,
+            value:false,
+            notify:true
           },
         /** Collection configuration **/  
           firestoreconfig:
@@ -50,6 +58,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               value:0,
               notify:true
           },
+           /** Data object to be passed **/
+           firestoredataobject:
+          {
+              type:Object,
+              value:"null",
+              notify:true
+          },
         /** Any errors thrown by the firestore db **/  
           firestoreerror:
           {
@@ -62,7 +77,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      
       static get observers() {
         return [
-            'configFirestore(firestoreconfig.collection)'
+            'configFirestore(firestoreconfig.*)'
         ]
       }
       
@@ -96,14 +111,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      */
      configFirestore( )
       {
-        if(this._observerinit.configFirestore === "ready")  
-        {
-          
-            this.initfirestore(this.firestoreconfig.collection); /* Set parameters */
-            this.getFirestoreListSize(); /* Get list size from the server async call */
-           
-        }else
-        this._observerinit.configFirestore = "ready";
+        console.log("configFirestore Invoked***")
+       
+           if(this.firestoreconfig.collection === 'null')
+           return;
+           this.initfirestore(this.firestoreconfig.collection); /* Set parameters */
+           if (this.firestorelistsize >= 0)
+           this.getFirestoreListSize(); /* Get list size from the server async call */
+           else /** read one complete set **/
+           {
+             readlistsize = 0;
+             this.getFirestoreData();
+           }
+        
               
       }
 
@@ -134,12 +154,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                  querySnapshot.forEach(function(doc) {
                    console.log(" List Size: " + doc.get("sequence"));
                    this.firestorelistsize = doc.get("sequence");
+                   this.dataupdatetoggle = !this.dataupdatetoggle;
                  }.bind(this));
              }.bind(this));
     
       }
       
-
+     /*
+     * 
+     * Async call back registered to get list size. This also indicates init complete
+     */
+     getFirestoreData( )
+       {
+        myglobal.firestorehandle.collection(this.firestoreconfig.collection).orderBy(this.firestoreconfig.orderby,"desc").limit(10)
+             .onSnapshot(function(snapshot) {
+              console.log("Reset Read list Size");
+              readlistsize = 0; 
+              snapshot.forEach(function(doc) {
+                if(readlistsize === 0)
+                {
+                  console.log("Read the sequence number to get size for the 1st time");
+                  this.firestorelistsize = doc.get("sequence");
+                  readlistsize =1;
+                }
+                  console.log(doc.id, " => ", doc.data());
+                   this.firestoredataobject = doc;
+                   
+                 }.bind(this));
+             }.bind(this));
+    
+      }
       
      }   /** End of Component **/
     

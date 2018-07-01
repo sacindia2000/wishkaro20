@@ -1,0 +1,213 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!-- Polymer Components -->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/paper-badge/paper-badge.html">
+<!-- App components -->
+<link rel="import" href="sharedstyles.html">
+
+
+
+<dom-module id="my-appdrawerlayout">
+  <template>
+  <style include= "sharedstyles" >
+  :host
+   {
+    top:0px;
+  }
+  .drawer-list
+      {
+        margin-top: 0px;
+        height:400px;
+      }
+      .drawer-item
+      {
+        height:48px;
+        width:100%;
+        position:relative;
+      }
+      h1
+      {
+        font-family: 'Roboto Slab', serif;
+        font-size:18px;
+      }
+      .drawer-icons
+      {
+        margin-top: 12px;
+        margin-bottom: 12px;
+      }
+      .drawericon-text
+      {
+        position:relative;
+        top:-44px;
+        left:40px;
+        font-family: 'Roboto Slab', serif;
+        font-size:18px;
+      }
+
+     
+</style> 
+ <div class = "drawer-list">  
+    <iron-selector on-tap = "categoryTapped" selected="{{categoryposition}}" selection-enabled >
+     <dom-repeat items="[[categorylistview]]" as="item">
+         <template>
+             <div class = "drawer-item">
+                 <paper-icon-button class = "drawer-icons"  id = "[[item.icon]]" icon="[[item.icon]]"></paper-icon-button>
+                 <div class = "drawericon-text">[[item.title]]</div>
+                 <paper-ripple></paper-ripple>
+                 <paper-badge for= "[[item.icon]]" label=[[item.label]] ></paper-badge>
+                </div>  
+         </template>
+       </dom-repeat>
+     </iron-selector>            
+ 
+    </div>
+
+</template>
+
+<script>
+ /** Const config parameters to be used for forestore config **/
+    /**
+     * @customElement
+     * @polymer
+     */
+    class MyAppDrawerLayout extends Polymer.Element {
+      static get is() { return 'my-appdrawerlayout'; }
+      static get properties() {
+        return {
+
+            /** Check for DB to be ready before accessing **/ 
+             list:
+             {
+              type:Array,
+            //  observer: "categoryUpdated"
+             },
+             categorylistview:
+             {
+               type:Array,
+               value: function (){return []; }
+             },
+             updatelistview:
+             {
+               type:Boolean,
+               observer: "listViewUpdated"
+             },
+             categoryposition:
+             {
+               type:Number,
+               observer: "categorySelected",
+               notify:true
+             },
+             categoryselected:
+             {
+               type:Boolean,
+               value:false,
+               notify:true
+             },
+             tempflagbadge:
+             {
+               type:Boolean,
+               value:false
+             }
+       
+               }
+          }
+
+          static get observers(){
+    return [
+        'categoryUpdated(list.*)'
+    ]
+}
+
+
+     
+     /**
+     * constructor
+     * Polymer life cycle function  
+     */
+      constructor()
+      {
+        super();
+      } /* End of constructor **/
+     
+     
+     /*
+     * 
+     * Ready polymer life cycle element
+     */
+       ready()
+      {
+        super.ready();
+        console.log("my-appdrawerlayout is READY");
+      }
+
+     categoryUpdated(record)
+     {
+        console.log("List Observer changed");
+       if(record.path == "list.splices")
+       {
+         console.log("Array got updated")
+       }else if (record.path == "list.length")
+       {
+         console.log("New element length");
+
+       }
+     }
+     
+     categorySelected()
+     {
+       console.log("New category selected "+ this.categoryposition);
+     }
+
+     listViewUpdated()
+     {
+       /** Update list view **/
+       this.categorylistview.length = 0;
+       for (var i = 0;i<this.list.length;i++)
+       {
+          var tempobj = new Object();
+          tempobj.title= this.list[i].title;
+          tempobj.icon = this.list[i].icon;
+          if (this.list[i].label === '0')
+          {
+            tempobj.hidelable = true;
+           }
+          else
+          {
+            tempobj.label = this.list[i].label;
+            tempobj.hidelable = false;
+          }
+          /** Fix the bug in paper-badge */
+          this.push("categorylistview",tempobj);
+       }
+     }
+
+     categoryTapped()
+     {
+       console.log("Tapped");
+       setTimeout(function() {
+          console.log("Time Out " + this.categoryposition); 
+                 this.categoryselected = !this.categoryselected;
+              }.bind(this),50);
+     }
+
+     }   /** End of Component **/
+    
+    window.customElements.define(MyAppDrawerLayout.is, MyAppDrawerLayout);
+  </script>
+</dom-module>

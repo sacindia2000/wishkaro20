@@ -1,0 +1,266 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!-- Polymer Components -->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<!-- App components -->
+<link rel="import" href="sharedstyles.html">
+<link rel="import" href="my-firestoreinit.html">
+
+
+<dom-module id="my-dbstats">
+  <template>
+  
+<my-firestoreinit firestoreconfig = "{{basedbconfig}}" firestoredataobject = "{{basedbdataobject}}" 
+firestorelistsize = "{{basedbsize}}">
+</my-firestoreinit>
+
+<!-- Register for changes across all categories -->
+      <dom-repeat items="[[categoryarray]]" as="item" mutable-data>
+        <template>
+        <my-firestoreinit dataupdatetoggle = "{{categorysizechangeind}}" firestoreconfig = "{{item.config}}" firestorelistsize = "{{item.listsize}}" 
+            firestorecollectionhndl = "{{item.dbhandlle}}">
+        </my-firestoreinit>      
+        </template>
+      </dom-repeat>
+
+</template>
+
+<script>
+  var templistsize;
+ /** Const config parameters to be used for forestore config **/
+    /**
+     * @customElement
+     * @polymer
+     */
+    class MyDbStats  extends Polymer.MutableData (Polymer.Element) {
+      static get is() { return 'my-dbstats'; }
+      static get properties() {
+        return {
+       /** Check for DB to be ready before accessing **/ 
+          dbready:
+          {
+            type:Boolean,
+            value:false,
+            observer:"databaseReady"
+          },
+       /** Config to be read from Firestore **/   
+          basedbconfig:
+          {
+            type:Object,
+            value: function()
+            {
+              return{
+              collection:'null',
+              orderby:'null',
+              limit:0
+              };
+            },
+            notify:true   
+          },
+        /** Size of the collection list  set to -1 to read complete**/
+          basedbsize:
+          {
+              type:Number,
+              value: -1,
+              observer:"categoryListSize"
+          },
+          /** Handle to collection **/
+           basedbhandle:
+          {
+            type:Object,
+            value: function (){return { }; }
+          },
+         /* Read configuration */ 
+          basedbreadconfig:
+          {
+             type:Object,
+             value: function() {return { limit:30,index:0,orderby:"sequence",dbhandle:{}};}
+          }, 
+        /** Data object passed from DB **/  
+          basedbdataobject:
+          {
+             type:Object,
+             value: function() {return null;},
+             observer:"collectionListObjectUpdatedCallback"
+          },
+         /** Each time any category size gets updated in the back end this flag is toggled **/ 
+            categorysizechangeind:
+          {
+              type:Boolean,
+              value : false,
+              observer:"listSizeUpdated"
+          },
+         /** array holding the category information **/ 
+          categoryarray:
+          {
+              type:Array,
+              value: function () {return [];} 
+          },
+          /** Snapshot to be shared with UI**/
+          categoryarrayuisnapshot:
+          {
+              type:Array,
+              value: function () {return [];},
+              notify: true
+          },
+         /** Each time back end update happens toggle this to inform UI **/ 
+          updateui:
+          {
+            type:Boolean,
+            value:false,
+            notify:true
+          },
+        /** Store list size of collections temp **/
+         _categorylistreadstate:
+        {
+          type: String,
+          value:"Init"
+        }                    
+        }
+          
+      }
+
+      
+     /*
+     * 
+     * Ready polymer life cycle element
+     */
+       ready()
+      {
+        super.ready();
+        console.log("my-dbstats is READY");
+      }
+
+     /*
+     * 
+     * Data base is ready. On DB ready indication get the category list size
+     */
+     databaseReady()
+     {
+        if(this.dbready === true)
+          {        
+              console.log("Firebase Init done");
+              this.basedbconfig.limit = 30;
+              this.basedbconfig.orderby  = "sequence";
+              this.set('basedbconfig.collection', 'wishkaro'); /* Later on move to config */
+              
+          }     
+   }
+
+   /*
+     * 
+     * Observer for category list size change
+     */
+
+      categoryListSize()
+      {
+         if( this.basedbsize > 0)
+         {
+           templistsize = this.basedbsize;
+           console.log("Database updated list size" + this.basedbsize);
+         }
+
+      }
+
+    /*
+     * 
+     * Update the collection data from server. And open listeners for each category
+     */
+     collectionListObjectUpdatedCallback ()
+     {
+         var collectionobject;
+         if ( this.basedbdataobject === null )
+         return;
+         console.log("Collection data received");
+         if(this._categorylistreadstate === "Init")
+         {
+           console.log("List updated reset count ");
+           this.categoryarray.length = 0;
+           this._categorylistreadstate = "Reading";
+         }
+
+         collectionobject = this.getCollectionObject( );
+         this.updateCollectionObject(collectionobject);
+         /** Update category array to link create firestore init objects for each collection */
+         this.push('categoryarray',collectionobject);
+         console.log(collectionobject.icon + collectionobject.name);
+         this.basedbsize -- ;
+         if(this.basedbsize === 0)
+         {         
+           this.updateUiSnapshot();
+           this._categorylistreadstate = "Init";
+         }
+         
+     }
+
+     listSizeUpdated()
+     {
+         console.log("List data updated inform UI");
+         this.updateUiSnapshot();
+
+     }
+
+    /** Category list update helpers **/
+    
+    /*
+     * 
+     * Get collection object with default values 
+     */
+     getCollectionObject(  )
+      {
+         var temp;
+         temp = new Object();
+         temp.config = new Object();
+     /** Init before returning **/    
+         temp.config.orderby = "sequence";
+         temp.config.limit = 30;
+         temp.listsize = 0;
+         temp.dbhandle = {};
+         return temp;
+     }
+
+     updateCollectionObject(object)
+     {
+         object.config.collection = this.basedbdataobject.get("name");            
+         object.icon = this.basedbdataobject.get("icon");
+         /** Other configs **/
+         object.title = this.basedbdataobject.get("title");
+         object.urlsubstring = this.basedbdataobject.get("urlsubstring");
+     }
+
+    /** Category list update helpers **/
+
+     /*
+     * 
+     * Update the new array mapping to UI with details 
+     */
+     updateUiSnapshot( )
+     {
+        var count=0;
+        this.categoryarrayuisnapshot.length = 0;
+        for(var i =0;i<this.categoryarray.length;i++)
+        {
+          var uiobj = new Object();
+          uiobj.collection = this.categoryarray[i].config.collection;
+          uiobj.listsize = this.categoryarray[i].listsize;
+          uiobj.title = this.categoryarray[i].title;
+          uiobj.urlsubstring = this.categoryarray[i].urlsubstring;
+          uiobj.icon = this.categoryarray[i].icon;
+         this.push('categoryarrayuisnapshot',uiobj); 
+        }
+        this.updateui = !this.updateui;
+     }
+
+
+     }   /** End of Component **/
+    
+    window.customElements.define(MyDbStats.is, MyDbStats);
+  </script>
+</dom-module>

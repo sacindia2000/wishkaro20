@@ -121,15 +121,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      */
        getFirestoreDataFromCollecton()
        {
-                 /** Seek data as per Index and Size **/
+        var getOptions = {
+            source: 'cache'
+        };
+         /** Seek data as per Index and Size **/
          this.firestorereadconfig.dbhandle
               .orderBy(this.firestorereadconfig.orderby,"desc")
               .startAt(this.firestorereadconfig.index)
-              .limit(this.firestorereadconfig.limit).get()
+              .limit(this.firestorereadconfig.limit).get(getOptions)
               .then(function(querySnapshot) {
+                  console.log("Printing QuerySnapshot =" + querySnapshot );
                    querySnapshot.forEach(function(doc) {
                // doc.data() is never undefined for query doc snapshots
-                   console.log(doc.id, " => ", doc.data());
+                   console.log("Received data is empty");
+                   console.log("PRINTING DATA"+ doc.id, " => ", doc.data());
                    this.firestoredataobject = doc;
                   }.bind(this));
               }.bind(this))
