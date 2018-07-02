@@ -326,6 +326,7 @@
          console.log("Category updated ");
          this.updateViewSnapshot();
          this.updateViewList(this.viewlist,this.categoryviewsnapshot);
+         this.createViewCountReference(this.categoryviewsnapshot,this.viewcountarray);
          this.updateDrawerUI();
        }
 
@@ -368,7 +369,7 @@
               temp.status= false;
               temp.collection = item.collection;
               viewlist.push(temp);
-            }             
+            }  
          })
 
        /** Purge the viewlist to remove any removed collection **/
@@ -391,7 +392,7 @@
      if(this.categoryindex === -1)
      return;
      this.startreading.collection = this.categoryviewsnapshot[this.categoryindex].collection;
-     this.notifyPath('startreading.collection');
+    // this.notifyPath('startreading.collection');
      this.updateViewedCount(this.categoryviewsnapshot[this.categoryindex].collection,
                             this.categoryviewsnapshot[this.categoryindex].listsize);
      this.drawerOpened = !this.drawerOpened;
@@ -429,19 +430,21 @@
             return 0;
       }
 
-      createViewCountReference(collection)
+      createViewCountReference(categoryarray,viewdcountarray)
       {
         
-        var viewcountobj = this.viewcountarray.find(viewcount =>
-                            viewcount.collection === collection);
-        if(typeof viewcountobj === 'undefined')
-        {
+        categoryarray.forEach(function(item){
+          var viewcountobj = viewdcountarray.find(viewcount =>
+                            viewcount.collection === item.collection);
+         if(typeof viewcountobj === 'undefined')
+           {
           var tempobj = new Object();
-          tempobj.collection = collection;
+          tempobj.collection = item.collection;
           tempobj.viewedcount = -1; //this.categoryviewsnapshot[i].listsize;;
-          this.viewcountarray.push(tempobj);
-        }
-
+          viewdcountarray.push(tempobj);
+          }  
+          
+            });
       }
 
       updateDrawerUI()
@@ -473,8 +476,15 @@
 
         getViewCountByCollection(collection)
         {
-           return  this.viewcountarray.find(viewcount =>
-                            viewcount.collection === collection);
+         //  return  this.viewcountarray.find(viewcount =>
+           //                 viewcount.collection === collection);
+
+            return this.viewcountarray.find(function(item){
+
+              if(item.collection === collection)
+              return item;
+            });
+        
         }
 
      

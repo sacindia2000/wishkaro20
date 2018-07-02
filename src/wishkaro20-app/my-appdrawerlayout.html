@@ -70,7 +70,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                  <paper-icon-button class = "drawer-icons"  id = "[[item.icon]]" icon="[[item.icon]]"></paper-icon-button>
                  <div class = "drawericon-text">[[item.title]]</div>
                  <paper-ripple></paper-ripple>
+                 <div hidden$="{{item.hidelable}}">
                  <paper-badge for= "[[item.icon]]" label=[[item.label]] ></paper-badge>
+                </div>
                 </div>  
          </template>
        </dom-repeat>
