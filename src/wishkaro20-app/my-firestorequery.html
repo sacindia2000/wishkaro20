@@ -128,7 +128,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          this.firestorereadconfig.dbhandle
               .orderBy(this.firestorereadconfig.orderby,"desc")
               .startAt(this.firestorereadconfig.index)
-              .limit(this.firestorereadconfig.limit).get(getOptions)
+              .limit(this.firestorereadconfig.limit).get()
               .then(function(querySnapshot) {
                   console.log("Printing QuerySnapshot =" + querySnapshot );
                    querySnapshot.forEach(function(doc) {

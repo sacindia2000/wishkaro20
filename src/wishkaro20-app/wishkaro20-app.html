@@ -98,22 +98,6 @@
                     
                     <my-appdrawerlayout list = "{{categories}}" categoryposition = "{{categoryindex}}"
                     categoryselected = "{{selectiontoggle}}" updatelistview = "{{uiviewupdatetoggle}}"></my-appdrawerlayout>
-                    
-                    <div class = "drawer-list">  
-                    <iron-selector selected="{{drawerselection}}">
-            <dom-repeat items="{{items}}">
-                <template>
-                    <div class = "drawer-item">
-                        <paper-icon-button class = "drawer-icons"  icon="accessibility"></paper-icon-button>
-                        <div class = "drawericon-text">Devotion</div>
-                        <paper-ripple></paper-ripple>
-                      </div>  
-                </template>
-              </dom-repeat>
-            </iron-selector>           
-        </div>
-
-     
      </app-drawer>
      
     
@@ -121,23 +105,22 @@
     
     <my-dbstats dbready = "{{firebasedbready}}" categoryarrayuisnapshot = "{{categoryarray}}"
                updateui = "{{listupdated}}"  ></my-dbstats>
-<!--
-               <dom-repeat items="[[viewlist]]" as="item" mutable-data>
-                <template>
-                <my-view3 name="view3" dbready = "{{firebasedbready}}" 
-                waitonread = "{{item}}"></my-view3> 
-                </template>
-              </dom-repeat>           
- -->   
-               <iron-pages      selected="{{selectpage}}"
+    
+       <!--        
+     <iron-pages      selected="{{selectpage}}"
     fallback-selection="view1">
     <my-view1 name="view1" dbready = "{{firebasedbready}}" overlayset = "{{keyhandler}}"></my-view1>
-    <my-view3 name="view3" dbready = "{{firebasedbready}}" waitonread = "{{startreading}}"></my-view3> 
-    <!-- Register for changes across all categories -->
-    
+      Register for changes across all categories
+    <dom-repeat items="[[viewlist]]" as="item" mutable-data>
+      <template>
+     <my-view3 name="view3" dbready = "{{firebasedbready}}" 
+      waitonread = "{{item}}"></my-view3> 
+      </template>
+    </dom-repeat>           
   </iron-pages>
-   
-    
+ -->
+<my-view1 name="view1" dbready = "{{firebasedbready}}" overlayset = "{{keyhandler}}"></my-view1>
+
   </template>
 
   <script>
@@ -226,12 +209,6 @@
           value:false
 
         },
-        drawerselection:
-        {
-          type:Number,
-          observer: "drawercategorySelected"
-        },
-
         categories:
         {
           type: Array,
@@ -323,10 +300,14 @@
      */
     categoryListUpdated()
       {
-         console.log("Category updated ");
+         console.log("categoryListUpdated observer invoked ");
+         /** Update the snapshot list with new changes in categories **/
          this.updateViewSnapshot();
-         this.updateViewList(this.viewlist,this.categoryviewsnapshot);
+        /** Create or remove DOM elemnets in view list  **/
+         this.updateViewList();
+        /** Update the viewed count **/ 
          this.createViewCountReference(this.categoryviewsnapshot,this.viewcountarray);
+         /** Update drawer UI **/
          this.updateDrawerUI();
        }
 
@@ -344,48 +325,82 @@
            temp.listsize =category.listsize;
            temp.title = category.title;
            temp.icon = category.icon;
+           temp.url = category.urlsubstring;
            return temp;           
         })
 
       }
    
-      /**
+    /**
      * @updateViewList
      * polymer
      * Updte viewlist as per change in backend collection
      */
-     updateViewList(viewlist,categorysnapshot)
+     updateViewList()
       {
-        /** Each time there is a chnage in the list loop through and add **/
+          this.apendViewList(this.viewlist,this.categoryviewsnapshot);
+          this.markViewlistForDeletion(this.viewlist,this.categoryviewsnapshot);
+          var i = this.viewlist.length;
+           while(i--)
+            {
+             if(this.viewlist[i].collection === 'null')
+             this.viewlist.splice(i,1);
+            }
+          this.notifyPath('viewlist');
+      }
+
+    /**
+     * @apendViewList
+     * polymer
+     * Helper function to update the viewlist 
+     */
+      apendViewList(viewlist,categorysnapshot)
+      {
+         /** Each time there is a chnage in the list loop through and add **/
         categorysnapshot.forEach(function(item){
              console.log("For each ***" + item.collection);
-             var tempcollection =  viewlist.find(function(collection){
-              return (collection === item.collection)
+             var tempcollection =  viewlist.find(function(view){
+              console.log("Checking for " + view.collection );
+              return (view.collection === item.collection)
+              
             });
-
+     
          if(typeof tempcollection === 'undefined')
             {         
               var temp = new Object();
               temp.status= false;
               temp.collection = item.collection;
+              console.log("Adding viewlist" + temp.collection);
               viewlist.push(temp);
             }  
          })
 
-       /** Purge the viewlist to remove any removed collection **/
-       viewlist.forEach(function(item,index){
-        var tempcollection =  categorysnapshot.find(function(category){
-              return (category.collection === item)
-            });
-            if(typeof tempcollection === 'undefined')
-            viewlist.splice(index,1);
-             })
 
-       this.notifyPath('viewlist');
-   
+      }
+    
+      /**
+     * @markViewlistForDeletion
+     * polymer
+     * Helper function to update the viewlist 
+     */
+      markViewlistForDeletion(viewlist,categorysnapshot )
+      {
+        viewlist.forEach(function(item,index){
+          for (var i=0; i<categorysnapshot.length;i++)
+            {
+             if(item.collection === categorysnapshot[i].collection )
+             return;
+           }
+          item.collection = 'null';
+          });
       }
    
-
+   /**
+     * @getCategoryIndex
+     * polymer
+     * Observer for category selected in drawer menu. 
+     * Change viewedcount and select the new view to be loaded 
+     */
    getCategoryIndex()
    {
      console.log("Category selected toggle drawer" + this.categoryindex);
@@ -393,13 +408,19 @@
      return;
      this.startreading.collection = this.categoryviewsnapshot[this.categoryindex].collection;
     // this.notifyPath('startreading.collection');
+     this.selectpage = this.categoryindex;
      this.updateViewedCount(this.categoryviewsnapshot[this.categoryindex].collection,
                             this.categoryviewsnapshot[this.categoryindex].listsize);
-     this.drawerOpened = !this.drawerOpened;
-
+     this._toggleDrawer();
    }
 
-     updateViewedCount(collection,count)
+   /**
+     * @updateViewedCount
+     * polymer
+     * Update the viewed count based on the collection being selected
+     * Change viewedcount and select the new view to be loaded 
+     */
+   updateViewedCount(collection,count)
    {
      var viewedcountobj;
          viewedcountobj = this.getViewCountByCollection(collection);
@@ -408,17 +429,24 @@
 
    }
 
-      drawercategorySelected()
-      {
-        console.log("Drawer category Selected" + this.drawerselection);
-      }
+   /**
+     * @_toggleDrawer
+     * polymer
+     * Toggle the drawer
+     * 
+     */
     
       _toggleDrawer() {
         this.drawerOpened = !this.drawerOpened;
            }
 
     
-     
+        /**
+     * @getLastViewedCount
+     * polymer
+     * Get the last viewed count by the user
+     * 
+     */
       getLastViewedCount(collection)
       {
         var viewcount = this.getViewCountByCollection(collection);
@@ -430,6 +458,12 @@
             return 0;
       }
 
+    /**
+     * @createViewCountReference
+     * polymer
+     * On new category addition update the view count 
+     * 
+     */
       createViewCountReference(categoryarray,viewdcountarray)
       {
         
@@ -440,13 +474,18 @@
            {
           var tempobj = new Object();
           tempobj.collection = item.collection;
-          tempobj.viewedcount = -1; //this.categoryviewsnapshot[i].listsize;;
+          tempobj.viewedcount = -1; /** Dirty hack to make sure hidden is not set on first launch **/
           viewdcountarray.push(tempobj);
           }  
           
             });
       }
-
+   /**
+     * @updateDrawerUI
+     * polymer
+     * Update the drawer UI with details
+     * 
+     */
       updateDrawerUI()
       {
         
@@ -454,7 +493,6 @@
         for(var i=0; i< this.categoryviewsnapshot.length;i++ )
         {
          var category = new Object ();
-        category.name = this.categoryviewsnapshot[i].name;
         category.icon = this.categoryviewsnapshot[i].icon;
         category.title = this.categoryviewsnapshot[i].title;
         var label;
@@ -472,15 +510,16 @@
 
       }
 
-
+      /**
+     * @getViewCountByCollection
+     * polymer
+     * Return last viewed count based on collection
+     * 
+     */
 
         getViewCountByCollection(collection)
         {
-         //  return  this.viewcountarray.find(viewcount =>
-           //                 viewcount.collection === collection);
-
-            return this.viewcountarray.find(function(item){
-
+          return this.viewcountarray.find(function(item){
               if(item.collection === collection)
               return item;
             });

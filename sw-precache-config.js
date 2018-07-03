@@ -31,11 +31,11 @@ module.exports = {
     },
     {
       urlPattern: /^https:/,
-      handler: 'fastest',
+      handler: 'cacheFirst',
       options: {
         cache: {
           name: 'content-cache',
-          maxEntries: 10,
+          maxEntries: 200,
         },
       },
     },

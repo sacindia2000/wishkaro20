@@ -37,7 +37,7 @@
 /* eslint-disable indent, no-unused-vars, no-multiple-empty-lines, max-nested-callbacks, space-before-function-paren, quotes, comma-spacing */
 'use strict';
 
-var precacheConfig = [["bower_components/webcomponentsjs/webcomponents-loader.js","f7eb9862b1725aef7e59f8584c2a2efb"],["index.html","c047f5431b3376e0f42914a99667654a"],["manifest.json","d8b6da61f4a15b6568f36d4b1d9f2c8e"],["src/wishkaro20-app/my-firebaseinit.html","0fdd4007a7d85e8aeaca52c69bc0f490"],["src/wishkaro20-app/my-firestoreinit.html","63132863d592036712b03ef8a67a96b0"],["src/wishkaro20-app/my-firestorequery.html","2181ef5835dc70c60c7dc499cac5e39a"],["src/wishkaro20-app/my-view1.html","559b3695edc3dda83868d874de318da5"],["src/wishkaro20-app/my-view2.html","bffbf3652732624cc959af2ce40004a8"],["src/wishkaro20-app/wishkaro20-app.html","7e500604128a1390e4ecda9f119a7f11"]];
+var precacheConfig = [["bower_components/webcomponentsjs/webcomponents-loader.js","f7eb9862b1725aef7e59f8584c2a2efb"],["index.html","c047f5431b3376e0f42914a99667654a"],["manifest.json","d8b6da61f4a15b6568f36d4b1d9f2c8e"],["src/wishkaro20-app/my-firebaseinit.html","0fdd4007a7d85e8aeaca52c69bc0f490"],["src/wishkaro20-app/my-firestoreinit.html","63132863d592036712b03ef8a67a96b0"],["src/wishkaro20-app/my-firestorequery.html","e72e7f1e42b7913275ec05c7b06f520e"],["src/wishkaro20-app/my-view1.html","559b3695edc3dda83868d874de318da5"],["src/wishkaro20-app/my-view2.html","bffbf3652732624cc959af2ce40004a8"],["src/wishkaro20-app/wishkaro20-app.html","1bb4582ca9097160e76d8472b79ad5fb"]];
 var cacheName = 'sw-precache-v3--' + (self.registration ? self.registration.scope : '');
 
 
@@ -286,7 +286,7 @@ self.addEventListener('fetch', function (event) {
 // Runtime cache configuration, using the sw-toolbox library.
 
 toolbox.router.get(/\/bower_components\/webcomponentsjs\/.*.js/, toolbox.fastest, {"cache":{"name":"webcomponentsjs-polyfills-cache"}});
-toolbox.router.get(/^https:/, toolbox.fastest, {"cache":{"name":"content-cache","maxEntries":10}});
+toolbox.router.get(/^https:/, toolbox.cacheFirst, {"cache":{"name":"content-cache","maxEntries":200}});
 
 
 
